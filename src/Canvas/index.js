@@ -133,21 +133,16 @@ class Population {
     }
 
   }
-
-
 }
 
 export default class Canvas extends Component {
     animate() {
-
-        var rem = this.animate.bind(this);
-        // Can do this better. SetTimeout shouldn't be a good idea
-        setTimeout(function() {
-                requestAnimationFrame(rem);
-            }, 1000 / 15);
-          this.pop.update();
-          this.particleSystem.geometry.verticesNeedUpdate = true;
-          this.renderer.render(this.scene, this.camera);
+      var rem = this.animate.bind(this);
+      // Can do this better. SetTimeout shouldn't be a good idea
+      this.pop.update();
+      this.particleSystem.geometry.verticesNeedUpdate = true;
+      this.renderer.render(this.scene, this.camera);
+      requestAnimationFrame(rem);
     }
 
 
@@ -185,7 +180,6 @@ export default class Canvas extends Component {
         });
     }
 
-
     setupScene() {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 1000 );
@@ -204,24 +198,20 @@ export default class Canvas extends Component {
         this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
         this.scene.add(this.sphere);
 
-        var that = this;
-
         // Add mousedown event
-        this.renderer.domElement.addEventListener("mousedown", function(event_info) {
+        this.renderer.domElement.addEventListener("mousedown", (event_info) => {
           event_info.preventDefault();
-          that.mouse.x = ( event_info.clientX / window.innerWidth ) * 2 - 1;
-          that.mouse.y = - ( event_info.clientY / window.innerHeight ) * 2 + 1;
-          var x = that.mouse.x*that.root.offsetWidth;
-          var y = that.mouse.y*that.root.offsetHeight;
-          console.log(x, y);
-          that.pop.set_optimization_goal({x:x,
-              y:y, z:that.mouse.z});
+          this.mouse.x = ( event_info.clientX / window.innerWidth ) * 2 - 1;
+          this.mouse.y = - ( event_info.clientY / window.innerHeight ) * 2 + 1;
+          var x = this.mouse.x*this.root.offsetWidth;
+          var y = this.mouse.y*this.root.offsetHeight;
+          console.log(x, y, event_info.clientX, event_info.clientY);
+          this.pop.set_optimization_goal({ x, y, z: this.mouse.z });
 
-          that.sphere.position.x = x;
-          that.sphere.position.y = y;
-          that.sphere.position.z = 0;
-
-        } );
+          this.sphere.position.x = x;
+          this.sphere.position.y = y;
+          this.sphere.position.z = 0;
+        });
 
         this.particles =  new THREE.Geometry();
 
@@ -263,15 +253,15 @@ export default class Canvas extends Component {
         this.camera.position.y = 0;
 
         // Set random interval to pick new locations..
-        setInterval(function() {
+        setInterval(() => {
             var x = Math.random() * 500 - 250;
             var y = Math.random() * 500 - 250;
             var z = Math.random() * 500 - 250;
-            that.pop.set_optimization_goal({x:x,
+            this.pop.set_optimization_goal({x:x,
                 y:y, z:z});
-            that.sphere.position.x = x;
-            that.sphere.position.y = y;
-            that.sphere.position.z = z;
+            this.sphere.position.x = x;
+            this.sphere.position.y = y;
+            this.sphere.position.z = z;
           },
           10000);
 

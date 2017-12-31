@@ -1,0 +1,27 @@
+.options {
+    text-align: left;
+    padding: 20px;
+    height: 100%;
+    width: 250px;
+}
+
+.options-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reset-button {
+}
+
+.form-control:not(:first-of-type) {
+    margin-top: 20px;
+}
+
+.options-formula {
+    display: flex;
+}
+
+.options-formula > *:nth-child(2) {
+    margin: 0 10px;
+}

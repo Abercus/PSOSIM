@@ -21,6 +21,7 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  padding-top: 58px;
 }
 
 .App-main {
@@ -30,5 +31,4 @@
 }
 
 .App-aside {
-  padding: 30px 20px;
 }
