@@ -32,17 +32,17 @@ function testOptimizationFunction(p, opt_vector) {
 
 // Class for whole population
 class Population {
-  constructor(pop) {
+  constructor(pop, optimization_goal) {
     this.population = pop;
     this.gBest = null;
     this.gBestNumerical = null;
-    this.optimization_goal = {x:0, y:0, z:0};
+    //this.optimization_goal = {x:0, y:0, z:0};
+    this.optimization_goal = optimization_goal;
   }
 
 
   set_optimization_goal(vector) {
     this.optimization_goal = vector;
-
     // When new goal then nullify bests
     this.gBest = null;
     this.gBestNumerical = null;
@@ -180,41 +180,12 @@ export default class Canvas extends Component {
         });
     }
 
-    setupScene() {
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 1000 );
 
-        this.renderer = new THREE.WebGLRenderer();
-        this.renderer.setSize(this.root.offsetWidth, this.root.offsetHeight);
-        this.root.appendChild(this.renderer.domElement);
 
+    resetSimulation() {
         // MOve this
-        this.mouse = { x: 0, y: 0, z: 0 }
-        this.opt_vector = {x: 0, y: 0, z: 0};
-
-
-        this.ballGeom = new THREE.SphereGeometry( 5, 32, 32 );
-        this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-        this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
-        this.scene.add(this.sphere);
-
-        // Add mousedown event
-        this.renderer.domElement.addEventListener("mousedown", (event_info) => {
-          event_info.preventDefault();
-          this.mouse.x = ( event_info.clientX / window.innerWidth ) * 2 - 1;
-          this.mouse.y = - ( event_info.clientY / window.innerHeight ) * 2 + 1;
-          var x = this.mouse.x*this.root.offsetWidth;
-          var y = this.mouse.y*this.root.offsetHeight;
-          console.log(x, y, event_info.clientX, event_info.clientY);
-          this.pop.set_optimization_goal({ x, y, z: this.mouse.z });
-
-          this.sphere.position.x = x;
-          this.sphere.position.y = y;
-          this.sphere.position.z = 0;
-        });
 
         this.particles =  new THREE.Geometry();
-
         this.particleCount = 50;
 
         this.pMaterial = new THREE.PointsMaterial({
@@ -225,34 +196,84 @@ export default class Canvas extends Component {
         })
 
         for (var p = 0; p < this.particleCount; p++) {
-            var pX = Math.random() * 500 - 250,
-            pY = Math.random() * 500 - 250,
-            pZ = Math.random() * 500 - 250,
+            var pX = Math.random() * 800 - 400,
+            pY = Math.random() * 800 - 400,
+            pZ = Math.random() * 800 - 400,
             particle = new THREE.Vector3(pX, pY, pZ);
             particle.velocity = new THREE.Vector3(0,0,0);
-            particle.bestNumerical = testOptimizationFunction(particle, this.opt_vector);
+            console.log(this.mouse);
+            particle.bestNumerical = testOptimizationFunction(particle,
+              this.sphere.position);
             particle.pBest = new THREE.Vector3(pX, pY, pZ);
 
             // add it to the geometry
             this.particles.vertices.push(particle);
         }
+
+
+
         this.particleSystem = new THREE.Points(
             this.particles,
             this.pMaterial);
         this.particleSystem.sortParticles = true;
-        this.pop = new Population(this.particles.vertices);
-        this.pop.findPopulationBest();
+        this.pop = new Population(this.particles.vertices,
+          this.sphere.position);
+        this.pop.set_optimization_goal(this.sphere.position);
 
 
         this.particleSystem.geometry.verticesNeedUpdate = true;
 
 
         this.scene.add(this.particleSystem);
+    }
+
+    setupScene() {
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 1000 );
+
+        this.renderer = new THREE.WebGLRenderer();
+        this.renderer.setSize(this.root.offsetWidth, this.root.offsetHeight);
+        this.root.appendChild(this.renderer.domElement);
+
+
+        this.ballGeom = new THREE.SphereGeometry( 5, 32, 32 );
+        this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+        this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
+        this.scene.add(this.sphere);
+
         this.camera.position.z = 500;
         this.camera.position.x = 0;
         this.camera.position.y = 0;
 
-        // Set random interval to pick new locations..
+        this.mouse = { x: 0, y: 0, z: 0 }
+
+        this.resetSimulation();
+
+
+        // Add mousedown event
+        this.renderer.domElement.addEventListener("mousedown", (event_info) => {
+          event_info.preventDefault();
+          this.mouse.x = ( event_info.clientX / window.innerWidth ) * 2 - 1;
+          this.mouse.y = - ( event_info.clientY / window.innerHeight ) * 2 + 1;
+          var x = this.mouse.x*this.root.offsetWidth;
+          var y = this.mouse.y*this.root.offsetHeight;
+          this.sphere.position.x = x;
+          this.sphere.position.y = y;
+          this.sphere.position.z = 0;
+          this.pop.set_optimization_goal({ x: x, y: y, z: this.mouse.z });
+
+        });
+
+
+
+        var that = this;
+        document.getElementsByClassName("reset-button")[0].addEventListener("click", function(){
+            that.scene.remove(that.particleSystem);
+            that.resetSimulation();
+        });
+
+
+        // Set random interval to pick new locations.. Move this stuff.
         setInterval(() => {
             var x = Math.random() * 500 - 250;
             var y = Math.random() * 500 - 250;
