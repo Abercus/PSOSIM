@@ -172,7 +172,6 @@ export default class Canvas extends Component {
 
     trackResize() {
         this.resizeSensor = new ResizeSensor(this.root, () => {
-            console.log(this.root.offsetWidth, this.root.offsetHeight)
             this.camera.aspect = this.root.offsetWidth/this.root.offsetHeight;
             this.camera.updateProjectionMatrix();
 
@@ -201,7 +200,6 @@ export default class Canvas extends Component {
             pZ = Math.random() * 800 - 400,
             particle = new THREE.Vector3(pX, pY, pZ);
             particle.velocity = new THREE.Vector3(0,0,0);
-            console.log(this.mouse);
             particle.bestNumerical = testOptimizationFunction(particle,
               this.sphere.position);
             particle.pBest = new THREE.Vector3(pX, pY, pZ);
@@ -263,15 +261,6 @@ export default class Canvas extends Component {
           this.pop.set_optimization_goal({ x: x, y: y, z: this.mouse.z });
 
         });
-
-
-
-        var that = this;
-        document.getElementsByClassName("reset-button")[0].addEventListener("click", function(){
-            that.scene.remove(that.particleSystem);
-            that.resetSimulation();
-        });
-
 
         // Set random interval to pick new locations.. Move this stuff.
         setInterval(() => {
