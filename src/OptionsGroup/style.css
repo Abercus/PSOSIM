@@ -1,0 +1,13 @@
+.options-group {
+    padding-top: 20px;
+}
+
+.options-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reset-button {
+}
+
