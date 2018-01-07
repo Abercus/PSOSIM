@@ -55,21 +55,20 @@ class Population {
 
   }
 
-  update() {
+  update(phiP, phiG) {
     // Learning factors (c1 and c2). These can be sliders later (or input box)
-    var c1 = 2, c2 = 2;
     // TODO: put particle logic into particle's method.
     for (var i=0; i<this.population.length; i++) {
       var particle = this.population[i];
       var rand1 = Math.random();
       var rand2 = Math.random();
-      particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle,c1,rand1),subtract(this.gBest, particle,c2,rand2)));
+      particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP ,rand1),subtract(this.gBest, particle, phiG, rand2)));
 
       // Check max/min velocity.... TODO: Put this in update function..
       // Also all subtracting and adding should be in one function.
       // ARe there vector operations in js?
 
-    //  console.log(addition(particle.velocity, addition(subtract(particle.pBest, particle,c1,rand1),subtract(this.gBest, particle,c2,rand2))));
+    //  console.log(addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP,rand1),subtract(this.gBest, particle,phiG,rand2))));
 
       // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT
       var LIMIT = 8;
@@ -112,6 +111,7 @@ class Population {
 
 
   findPopulationBest() {
+    console.log(this.population)
     var bestNumerical = this.population[0].bestNumerical;
     var best = this.population[0].pBest;
     for (var i=1; i<this.population.length; i++) {
@@ -139,7 +139,7 @@ export default class Canvas extends Component {
     animate() {
       var rem = this.animate.bind(this);
       // Can do this better. SetTimeout shouldn't be a good idea
-      this.pop.update();
+      this.pop.update(this.props.phiP, this.props.phiG);
       this.particleSystem.geometry.verticesNeedUpdate = true;
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(rem);
@@ -185,7 +185,6 @@ export default class Canvas extends Component {
         // MOve this
 
         this.particles =  new THREE.Geometry();
-        this.particleCount = 50;
 
         this.pMaterial = new THREE.PointsMaterial({
           size: 10,
@@ -194,7 +193,7 @@ export default class Canvas extends Component {
           depthWrite: false
         })
 
-        for (var p = 0; p < this.particleCount; p++) {
+        for (var p = 0; p < this.props.particlesNumber; p++) {
             var pX = Math.random() * 800 - 400,
             pY = Math.random() * 800 - 400,
             pZ = Math.random() * 800 - 400,
@@ -281,6 +280,10 @@ export default class Canvas extends Component {
     componentDidMount() {
         this.trackResize();
         this.setupScene();
+    }
+
+    shouldComponentUpdate() {
+      return false;
     }
 
     render() {
