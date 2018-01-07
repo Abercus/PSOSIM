@@ -183,7 +183,7 @@ export default class Canvas extends Component {
 
     resetSimulation() {
         // MOve this
-
+        this.scene.remove(this.particleSystem);
         this.particles =  new THREE.Geometry();
 
         this.pMaterial = new THREE.PointsMaterial({
