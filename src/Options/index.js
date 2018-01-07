@@ -15,7 +15,7 @@ const Options = (props) => (
         <OptionsGroup title="Swarm">
             <FormControl className='form-control'>
                 <InputLabel htmlFor='particles-number'>Number of particles</InputLabel>
-                <Input type='number' />
+                <Input id='particlesCount' type='number' />
             </FormControl>
             <FormControl className='form-control'>
                 <InputLabel htmlFor="topology-native">Topology</InputLabel>
@@ -34,11 +34,11 @@ const Options = (props) => (
                 </FormControl>
                 <FormControl className='phi_p'>
                     <InputLabel htmlFor='phi_p'>φ<sub>p</sub></InputLabel>
-                    <Input type='number' />
+                    <Input id='phi_p' type='number' />
                 </FormControl>
                 <FormControl className='phi_g'>
                     <InputLabel htmlFor='phi_g'>φ<sub>g</sub></InputLabel>
-                    <Input type='number' />
+                    <Input id='phi_g' type='number' />
                 </FormControl>
             </div>
         </OptionsGroup>

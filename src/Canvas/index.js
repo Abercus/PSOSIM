@@ -57,7 +57,8 @@ class Population {
 
   update() {
     // Learning factors (c1 and c2). These can be sliders later (or input box)
-    var c1 = 2, c2 = 2;
+    var c1 = document.getElementsById("phi_p").value = 2;
+	var c2 = document.getElementsById("phi_g").value = 2;
     // TODO: put particle logic into particle's method.
     for (var i=0; i<this.population.length; i++) {
       var particle = this.population[i];
@@ -186,7 +187,7 @@ export default class Canvas extends Component {
         // MOve this
 
         this.particles =  new THREE.Geometry();
-        this.particleCount = 50;
+        this.particleCount = document.getElementsById("particleCount").value = 50;
 
         this.pMaterial = new THREE.PointsMaterial({
           size: 10,
