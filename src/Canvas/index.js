@@ -1,9 +1,17 @@
 import React, { Component } from 'react';
 import * as THREE from 'three';
-import ResizeSensor from 'css-element-queries/src/ResizeSensor.js';
+import ResizeSensor from 'css-element-queries/src/ResizeSensor';
+import Parser from './parser';
 
 import './style.css'
 
+
+function getOptimizationFunction(name) {
+  if (name === 'sphere') {
+    return Parser.parse('x^2 - y^2').toJSFunction( ['x','y'] );
+  }
+  throw Error();
+}
 
 
 function addition(v1,v2) {
@@ -14,7 +22,6 @@ function addition(v1,v2) {
 
 function subtract(v1,v2,c,rand1) {
   return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), c*rand1*(v1.z-v2.z));
-
 }
 
 
@@ -145,7 +152,6 @@ export default class Canvas extends Component {
       requestAnimationFrame(rem);
     }
 
-
     // FROM HERE ADDITIONS.. RELOCATE.
 
     createCircleTexture(color, size) {
@@ -179,9 +185,9 @@ export default class Canvas extends Component {
         });
     }
 
-
-
     resetSimulation() {
+        const optimizationFunction = getOptimizationFunction(this.props.optimizationFunction);
+
         // MOve this
         this.scene.remove(this.particleSystem);
         this.particles =  new THREE.Geometry();

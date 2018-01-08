@@ -78,15 +78,14 @@ const Options = ({
                 <InputLabel htmlFor='optimas-number'>Number of optimas</InputLabel>
                 <Input type='number' value={optimasNumber} onChange={unwrap(onOptimasNumberChange, Number)} />
             </FormControl>
-            <FormControl className='form-control'>
+            <FormControl className='form-control' style={{ minWidth: 210 }}>
                 <InputLabel>Optimization function</InputLabel>
                 <Select
                     value={optimizationFunction}
                     onChange={unwrap(onOptimizationFunctionChange)}
+                    autoWidth
                 >
-                    <MenuItem value='rast'>Rastrigin’s function</MenuItem>
-                    <MenuItem value='dejong'>De Jong's function</MenuItem>
-                    <MenuItem value='rosenbrock'>Rosenbrock's valley</MenuItem>
+                    <MenuItem value='sphere'>Sphere</MenuItem>
                 </Select>
             </FormControl>
         </OptionsGroup>

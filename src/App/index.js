@@ -17,7 +17,7 @@ class App extends Component {
   functionDefaults = {
     dimensions: '2d',
     optimasNumber: 1,
-    optimizationFunction: 'rast'
+    optimizationFunction: 'sphere'
   }
 
   constructor() {
