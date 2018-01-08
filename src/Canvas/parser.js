@@ -275,7 +275,30 @@ Expression.prototype = {
     },
 
     toJSFunction: function (param, variables) {
-        var f = new Function(param, "with(Parser.values) { return " + this.simplify(variables).toString(true) + "; }");
+        const sin = Math.sin;
+        const cos = Math.cos;
+        const tan = Math.tan;
+        const asin = Math.asin;
+        const acos = Math.acos;
+        const atan = Math.atan;
+        const sqrt = Math.sqrt;
+        const log = Math.log;
+        const abs = Math.abs;
+        const ceil = Math.ceil;
+        const floor = Math.floor;
+        const round = Math.round;
+        const random = random;
+        const fac = fac;
+        const exp = Math.exp;
+        const min = Math.min;
+        const max = Math.max;
+        const pyt = pyt;
+        const pow = Math.pow;
+        const atan2 = Math.atan2;
+        const E = Math.E;
+        const PI = Math.PI;
+
+        var f = new Function(param, "return " + this.simplify(variables).toString(true) + ";");
         return f;
     }
 };
@@ -394,31 +417,6 @@ Parser.evaluate = function (expr, variables) {
 };
 
 Parser.Expression = Expression;
-
-Parser.values = {
-    sin: Math.sin,
-    cos: Math.cos,
-    tan: Math.tan,
-    asin: Math.asin,
-    acos: Math.acos,
-    atan: Math.atan,
-    sqrt: Math.sqrt,
-    log: Math.log,
-    abs: Math.abs,
-    ceil: Math.ceil,
-    floor: Math.floor,
-    round: Math.round,
-    random: random,
-    fac: fac,
-    exp: Math.exp,
-    min: Math.min,
-    max: Math.max,
-    pyt: pyt,
-    pow: Math.pow,
-    atan2: Math.atan2,
-    E: Math.E,
-    PI: Math.PI
-};
 
 var PRIMARY      = 1 << 0;
 var OPERATOR     = 1 << 1;

@@ -251,6 +251,7 @@ export default class Canvas extends Component {
 
         // bgcolor
         this.renderer.setClearColor( 0x888888, 1 );
+        this.createGraph();
     }
 
     createGraph() {
@@ -287,16 +288,14 @@ export default class Canvas extends Component {
       // faces are indexed using characters
       var faceIndices = [ 'a', 'b', 'c', 'd' ];
       // first, assign colors to vertices as desired
-      for ( var i = 0; i < graphGeometry.vertices.length; i++ ) 
-      {
+      for ( var i = 0; i < graphGeometry.vertices.length; i++ ) {
         point = graphGeometry.vertices[ i ];
         color = new THREE.Color( 0x0000ff );
         color.setHSL( 0.7 * (zMax - point.z) / zRange, 1, 0.5 );
         graphGeometry.colors[i] = color; // use this array for convenience
       }
       // copy the colors as necessary to the face's vertexColors array.
-      for ( var i = 0; i < graphGeometry.faces.length; i++ ) 
-      {
+      for ( var i = 0; i < graphGeometry.faces.length; i++ ) {
         face = graphGeometry.faces[ i ];
         numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
         for( var j = 0; j < numberOfSides; j++ ) 
@@ -314,7 +313,7 @@ export default class Canvas extends Component {
       wireTexture.wrapS = wireTexture.wrapT = THREE.RepeatWrapping; 
       wireTexture.repeat.set( 40, 40 );
 
-      const normMaterial = new THREE.MeshNormalMaterial;
+      const normMaterial = new THREE.MeshNormalMaterial();
       const shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
       const wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide } );
       const vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
