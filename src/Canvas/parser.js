@@ -275,28 +275,28 @@ Expression.prototype = {
     },
 
     toJSFunction: function (param, variables) {
-        const sin = Math.sin;
-        const cos = Math.cos;
-        const tan = Math.tan;
-        const asin = Math.asin;
-        const acos = Math.acos;
-        const atan = Math.atan;
-        const sqrt = Math.sqrt;
-        const log = Math.log;
-        const abs = Math.abs;
-        const ceil = Math.ceil;
-        const floor = Math.floor;
-        const round = Math.round;
-        const random = random;
-        const fac = fac;
-        const exp = Math.exp;
-        const min = Math.min;
-        const max = Math.max;
-        const pyt = pyt;
-        const pow = Math.pow;
-        const atan2 = Math.atan2;
-        const E = Math.E;
-        const PI = Math.PI;
+        window.sin = Math.sin;
+        window.cos = Math.cos;
+        window.tan = Math.tan;
+        window.asin = Math.asin;
+        window.acos = Math.acos;
+        window.atan = Math.atan;
+        window.sqrt = Math.sqrt;
+        window.log = Math.log;
+        window.abs = Math.abs;
+        window.ceil = Math.ceil;
+        window.floor = Math.floor;
+        window.round = Math.round;
+        window.random = random;
+        window.fac = fac;
+        window.exp = Math.exp;
+        window.min = Math.min;
+        window.max = Math.max;
+        window.pyt = pyt;
+        window.pow = Math.pow;
+        window.atan2 = Math.atan2;
+        window.E = Math.E;
+        window.PI = Math.PI;
 
         var f = new Function(param, "return " + this.simplify(variables).toString(true) + ";");
         return f;

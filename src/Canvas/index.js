@@ -12,7 +12,7 @@ const OrbitControls = OrbitControlsFactory(THREE);
 
 function getOptimizationFunction(name) {
   if (name === 'sphere') {
-    return Parser.parse('x^2 - y^2').toJSFunction( ['x','y'] );
+    return Parser.parse('(0.005 * x^2 + 0.005 * y^2)').toJSFunction( ['x','y'] );
   }
   throw Error();
 }
@@ -255,11 +255,11 @@ export default class Canvas extends Component {
     }
 
     createGraph() {
-      const segments = 20;
-      const xMin = -250
-      const xMax = 250
-      const yMin = -250
-      const yMax = 250
+      const segments = 40;
+      const xMin = -100
+      const xMax = 100
+      const yMin = -100
+      const yMax = 100
       const xRange = xMax - xMin;
       const yRange = yMax - yMin;
       const zFunc = getOptimizationFunction(this.props.optimizationFunction);
@@ -275,7 +275,7 @@ export default class Canvas extends Component {
       };
       
       // true => sensible image tile repeat...
-      const graphGeometry = new THREE.ParametricGeometry( meshFunction, segments, segments, true );
+      const graphGeometry = new THREE.ParametricGeometry(meshFunction, segments, segments, true );
       
       ///////////////////////////////////////////////
       // calculate vertex colors based on Z values //
@@ -283,6 +283,7 @@ export default class Canvas extends Component {
       graphGeometry.computeBoundingBox();
       const zMin = graphGeometry.boundingBox.min.z;
       const zMax = graphGeometry.boundingBox.max.z;
+      console.log(graphGeometry.boundingBox.max.z)
       const zRange = zMax - zMin;
       var color, point, face, numberOfSides, vertexIndex;
       // faces are indexed using characters
