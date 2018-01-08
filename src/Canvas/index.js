@@ -2,8 +2,12 @@ import React, { Component } from 'react';
 import * as THREE from 'three';
 import ResizeSensor from 'css-element-queries/src/ResizeSensor';
 import Parser from './parser';
+import OrbitControlsFactory from 'three-orbit-controls';
 
 import './style.css'
+
+
+const OrbitControls = OrbitControlsFactory(THREE);
 
 
 function getOptimizationFunction(name) {
@@ -118,7 +122,6 @@ class Population {
 
 
   findPopulationBest() {
-    console.log(this.population)
     var bestNumerical = this.population[0].bestNumerical;
     var best = this.population[0].pBest;
     for (var i=1; i<this.population.length; i++) {
@@ -230,6 +233,104 @@ export default class Canvas extends Component {
         this.scene.add(this.particleSystem);
     }
 
+    setupVisualization() {
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        const light = new THREE.PointLight(0xffffff);
+        light.position.set(0,250,0);
+        this.scene.add(light);
+
+        this.scene.add( new THREE.AxisHelper() );
+        // wireframe for xy-plane
+        var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088, wireframe: true, side:THREE.DoubleSide } ); 
+        var floorGeometry = new THREE.PlaneGeometry(1000,1000,10,10);
+        var floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
+        floor.position.z = -0.01;
+        // rotate to lie in x-y plane
+        // floor.rotation.x = Math.PI / 2;
+        this.scene.add(floor);
+
+        // bgcolor
+        this.renderer.setClearColor( 0x888888, 1 );
+    }
+
+    createGraph() {
+      const segments = 20;
+      const xMin = -250
+      const xMax = 250
+      const yMin = -250
+      const yMax = 250
+      const xRange = xMax - xMin;
+      const yRange = yMax - yMin;
+      const zFunc = getOptimizationFunction(this.props.optimizationFunction);
+
+      const meshFunction = (x, y) => {
+        x = xRange * x + xMin;
+        y = yRange * y + yMin;
+        var z = zFunc(x,y);
+        if (isNaN(z))
+          return new THREE.Vector3(0,0,0); // TODO: better fix
+        else
+          return new THREE.Vector3(x, y, z);
+      };
+      
+      // true => sensible image tile repeat...
+      const graphGeometry = new THREE.ParametricGeometry( meshFunction, segments, segments, true );
+      
+      ///////////////////////////////////////////////
+      // calculate vertex colors based on Z values //
+      ///////////////////////////////////////////////
+      graphGeometry.computeBoundingBox();
+      const zMin = graphGeometry.boundingBox.min.z;
+      const zMax = graphGeometry.boundingBox.max.z;
+      const zRange = zMax - zMin;
+      var color, point, face, numberOfSides, vertexIndex;
+      // faces are indexed using characters
+      var faceIndices = [ 'a', 'b', 'c', 'd' ];
+      // first, assign colors to vertices as desired
+      for ( var i = 0; i < graphGeometry.vertices.length; i++ ) 
+      {
+        point = graphGeometry.vertices[ i ];
+        color = new THREE.Color( 0x0000ff );
+        color.setHSL( 0.7 * (zMax - point.z) / zRange, 1, 0.5 );
+        graphGeometry.colors[i] = color; // use this array for convenience
+      }
+      // copy the colors as necessary to the face's vertexColors array.
+      for ( var i = 0; i < graphGeometry.faces.length; i++ ) 
+      {
+        face = graphGeometry.faces[ i ];
+        numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
+        for( var j = 0; j < numberOfSides; j++ ) 
+        {
+          vertexIndex = face[ faceIndices[ j ] ];
+          face.vertexColors[ j ] = graphGeometry.colors[ vertexIndex ];
+        }
+      }
+      ///////////////////////
+      // end vertex colors //
+      ///////////////////////
+      
+      // material choices: vertexColorMaterial, wireMaterial , normMaterial , shadeMaterial
+      const wireTexture = new THREE.ImageUtils.loadTexture( 'images/square.png' );
+      wireTexture.wrapS = wireTexture.wrapT = THREE.RepeatWrapping; 
+      wireTexture.repeat.set( 40, 40 );
+
+      const normMaterial = new THREE.MeshNormalMaterial;
+      const shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+      const wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide } );
+      const vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
+      
+      if (this.graphMesh) {
+        this.scene.remove(this.graphMesh);
+        // renderer.deallocateObject( graphMesh );
+      }
+
+      wireMaterial.map.repeat.set( segments, segments );
+      
+      this.graphMesh = new THREE.Mesh( graphGeometry, wireMaterial );
+      this.graphMesh.doubleSided = true;
+      this.scene.add(this.graphMesh);
+    }
+
     setupScene() {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 1000 );
@@ -244,14 +345,12 @@ export default class Canvas extends Component {
         this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
         this.scene.add(this.sphere);
 
-        this.camera.position.z = 500;
-        this.camera.position.x = 0;
-        this.camera.position.y = 0;
+        this.camera.position.set(0, 0, 500);
 
         this.mouse = { x: 0, y: 0, z: 0 }
 
+        this.setupVisualization();
         this.resetSimulation();
-
 
         // Add mousedown event
         this.renderer.domElement.addEventListener("mousedown", (event_info) => {
