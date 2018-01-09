@@ -135,7 +135,7 @@ class Population {
     this.findPopulationBest();
   }
 
-  update = throttle((phiP, phiG) => {
+  update(phiP, phiG) {
     // Learning factors (c1 and c2). These can be sliders later (or input box)
     // TODO: put particle logic into particle's method.
     for (let particle of this.population) {
@@ -229,7 +229,7 @@ class Population {
         }
       }
     }
-  })
+  }
 
   findPopulationBest() {
     var bestNumerical = this.population[0].bestNumerical;
@@ -267,16 +267,20 @@ export default class Canvas extends Component {
       this.yRange = this.yMax - this.yMin;
     }
 
+    updateParticles = throttle(() => {
+      this.pop.update(this.props.phiP, this.props.phiG);
+      this.particleSystem.geometry.verticesNeedUpdate = true;
+    })
+
     animate() {
       var rem = this.animate.bind(this);
       // Can do this better. SetTimeout shouldn't be a good idea
-      this.pop.update(this.props.phiP, this.props.phiG);
+      this.updateParticles()
       this.sphere.position.x = this.pop.gBest.x;
       this.sphere.position.y = this.pop.gBest.y;
       this.sphere.position.z = this.pop.gBest.z * this.zScale();
 
 
-      this.particleSystem.geometry.verticesNeedUpdate = true;
        // This hack does not work.. think of something else..
       for (var i = 0; i < this.particles.vertices.length; i++) {
         this.particles.vertices[i].z *= this.zScale();
@@ -568,7 +572,7 @@ export default class Canvas extends Component {
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.playbackSpeed !== this.props.playbackSpeed) {
-        this.pop.update.setWait(1000 / nextProps.playbackSpeed);
+        this.updateParticles.setWait(1000 / nextProps.playbackSpeed);
       }
       if (nextProps.landscapeFlatness !== this.props.landscapeFlatness) {
         const zFunc = getOptimizationFunction(this.props.optimizationFunction);
