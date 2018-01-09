@@ -98,11 +98,15 @@ function throttle(callback, wait=0, context = this) {
 
 // Class for whole population
 class Population {
-  constructor(pop, optimizeByFunction) {
+  constructor(pop, optimizeByFunction, xMin, xMax, yMin, yMax) {
     this.population = pop;
     this.gBest = null;
     this.gBestNumerical = null;
     this.optimizeByFunction = optimizeByFunction;
+    this.xMin = xMin;
+    this.xMax = xMax;
+    this.yMin = yMin;
+    this.yMax = yMax;
   }
 
   set_optimization_goal(vector) {
@@ -178,36 +182,30 @@ class Population {
           particle.velocity.z = LIMIT;
         }
       }
+
       // If bounded search area.
-
-
-      var axLim = 512;
-      var xMax = axLim,
-          xMin = -axLim,
-          yMax = axLim,
-          yMin = -axLim;
       var newLocation = addition(particle, particle.velocity);
-      if (newLocation.x > xMax) {
+      if (newLocation.x > this.xMax) {
         if (particle.velocity.x > 0) {
           particle.velocity.x *= -1;
         }
-        newLocation.x = xMax + particle.velocity.x;
-      } else if (newLocation.x < xMin) {
+        newLocation.x = this.xMax + particle.velocity.x;
+      } else if (newLocation.x < this.xMin) {
           if (particle.velocity.x < 0) {
             particle.velocity.x *= -1;
           }
-        newLocation.x = xMin + particle.velocity.x;
+        newLocation.x = this.xMin + particle.velocity.x;
       }
-      if (newLocation.y > yMax) {
+      if (newLocation.y > this.yMax) {
         if (particle.velocity.y > 0) {
           particle.velocity.y *= -1;
         }
-          newLocation.y = yMax + particle.velocity.y;
-      } else if (newLocation.y < yMin) {
+          newLocation.y = this.yMax + particle.velocity.y;
+      } else if (newLocation.y < this.yMin) {
         if (particle.velocity.y < 0) {
           particle.velocity.y *= -1;
         }
-          newLocation.y = yMin + particle.velocity.y;
+          newLocation.y = this.yMin + particle.velocity.y;
       }
 
       particle.x = newLocation.x;
@@ -258,23 +256,38 @@ class Population {
 }
 
 export default class Canvas extends Component {
+    constructor() {
+      super();
+      this.segments = 200;
+      this.xMin = -512;
+      this.xMax = 512;
+      this.yMin = -512;
+      this.yMax = 512;
+      this.xRange = this.xMax - this.xMin;
+      this.yRange = this.yMax - this.yMin;
+    }
+
     animate() {
       var rem = this.animate.bind(this);
       // Can do this better. SetTimeout shouldn't be a good idea
       this.pop.update(this.props.phiP, this.props.phiG);
       this.sphere.position.x = this.pop.gBest.x;
       this.sphere.position.y = this.pop.gBest.y;
-      this.sphere.position.z = this.pop.gBest.z * 0.2;
+      this.sphere.position.z = this.pop.gBest.z * this.zScale();
 
 
       this.particleSystem.geometry.verticesNeedUpdate = true;
        // This hack does not work.. think of something else..
       for (var i = 0; i < this.particles.vertices.length; i++) {
-        this.particles.vertices[i].z *= 0.2;
+        this.particles.vertices[i].z *= this.zScale();
       }
 
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(rem);
+    }
+
+    zScale(landscapeFlatness = this.props.landscapeFlatness) {
+      return ((100 - landscapeFlatness) / 100);
     }
 
     // FROM HERE ADDITIONS.. RELOCATE.
@@ -351,18 +364,17 @@ export default class Canvas extends Component {
             this.particles,
             this.pMaterial);
         this.particleSystem.sortParticles = true;
+        const bounds = [this.xMin, this.xMax, this.yMin, this.yMax];
         if (this.CLICKABLE_DEMO) {
-          this.pop = new Population(this.particles.vertices, false);
+          this.pop = new Population(this.particles.vertices, false, ...bounds);
           this.pop.set_optimization_goal(this.sphere.position);
 
         } else {
-          this.pop = new Population(this.particles.vertices, true);
+          this.pop = new Population(this.particles.vertices, true, ...bounds);
           this.pop.set_optimization_function(optimizationFunction);
         }
 
-
         this.particleSystem.geometry.verticesNeedUpdate = true;
-
 
         this.scene.add(this.particleSystem);
     }
@@ -393,36 +405,13 @@ export default class Canvas extends Component {
         }
     }
 
-    createGraph() {
-      const segments = 200;
-      const xMin = -512;
-      const xMax = 512;
-      const yMin = -512;
-      const yMax = 512;
-      const xRange = xMax - xMin;
-      const yRange = yMax - yMin;
-      const zFunc = getOptimizationFunction(this.props.optimizationFunction);
-
-      const meshFunction = (x, y) => {
-        x = xRange * x + xMin;
-        y = yRange * y + yMin;
-        var z = zFunc(x,y) * 0.2;
-        if (isNaN(z))
-          return new THREE.Vector3(0,0,0); // TODO: better fix
-        else
-          return new THREE.Vector3(x, y, z);
-      };
-
-      // true => sensible image tile repeat...
-      const graphGeometry = new THREE.ParametricGeometry(meshFunction, segments, segments, true );
-
+    setupLandscapeColors(graphGeometry) {
       ///////////////////////////////////////////////
       // calculate vertex colors based on Z values //
       ///////////////////////////////////////////////
       graphGeometry.computeBoundingBox();
       const zMin = graphGeometry.boundingBox.min.z;
       const zMax = graphGeometry.boundingBox.max.z;
-      console.log(graphGeometry.boundingBox.max.z)
       const zRange = zMax - zMin;
       var color, point, face, numberOfSides, vertexIndex;
       // faces are indexed using characters
@@ -444,9 +433,25 @@ export default class Canvas extends Component {
           face.vertexColors[ j ] = graphGeometry.colors[ vertexIndex ];
         }
       }
-      ///////////////////////
-      // end vertex colors //
-      ///////////////////////
+    }
+
+    createGraph() {
+      const zFunc = getOptimizationFunction(this.props.optimizationFunction);
+
+      const meshFunction = (x, y) => {
+        x = this.xRange * x + this.xMin;
+        y = this.yRange * y + this.yMin;
+        var z = zFunc(x,y) * this.zScale();
+        if (isNaN(z))
+          return new THREE.Vector3(0,0,0); // TODO: better fix
+        else
+          return new THREE.Vector3(x, y, z);
+      };
+
+      // true => sensible image tile repeat...
+      const graphGeometry = new THREE.ParametricGeometry(meshFunction, this.segments, this.segments, true );
+      console.log(graphGeometry);
+      this.setupLandscapeColors(graphGeometry);
 
       // material choices: vertexColorMaterial, wireMaterial , normMaterial , shadeMaterial
       const wireTexture = new THREE.ImageUtils.loadTexture( 'images/square.png' );
@@ -455,7 +460,13 @@ export default class Canvas extends Component {
 
       const normMaterial = new THREE.MeshNormalMaterial();
       const shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-      const wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide, transparent:true, opacity: 0.5 } );
+      const wireMaterial = new THREE.MeshBasicMaterial({
+        map: wireTexture,
+        vertexColors: THREE.VertexColors,
+        side:THREE.DoubleSide,
+        transparent:true,
+        opacity: 0.5
+      });
       const vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 
       if (this.graphMesh) {
@@ -463,7 +474,7 @@ export default class Canvas extends Component {
         // renderer.deallocateObject( graphMesh );
       }
 
-      wireMaterial.map.repeat.set( segments, segments );
+      wireMaterial.map.repeat.set( this.segments, this.segments );
 
       this.graphMesh = new THREE.Mesh( graphGeometry, wireMaterial );
       this.graphMesh.doubleSided = true;
@@ -557,7 +568,18 @@ export default class Canvas extends Component {
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.playbackSpeed !== this.props.playbackSpeed) {
-        this.pop.update.setWait(1000 / this.props.playbackSpeed);
+        this.pop.update.setWait(1000 / nextProps.playbackSpeed);
+      }
+      if (nextProps.landscapeFlatness !== this.props.landscapeFlatness) {
+        const zFunc = getOptimizationFunction(this.props.optimizationFunction);
+        for (let vertice of this.graphMesh.geometry.vertices) {
+          vertice.z = zFunc(vertice.x, vertice.y) * this.zScale(nextProps.landscapeFlatness);
+        }
+        this.graphMesh.geometry.verticesNeedUpdate = true;
+      }
+      if (nextProps.landscapeOpacity !== this.props.landscapeOpacity) {
+        this.graphMesh.material.opacity = nextProps.landscapeOpacity / 100;
+        this.graphMesh.material.needsUpdate = true;
       }
     }
 

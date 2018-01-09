@@ -92,7 +92,7 @@ const Options = ({
             </FormControl>
             <FormControl className='form-control'>
                 <FormLabel>Landscape Flatness</FormLabel>
-                <Slider value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
+                <Slider step={25} value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
             </FormControl>
         </OptionsGroup>
     </Paper>

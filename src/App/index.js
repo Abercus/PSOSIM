@@ -20,8 +20,8 @@ class App extends Component {
 
   visualizationDefaults = {
     playbackSpeed: 60,
-    landscapeOpacity: 100,
-    landscapeFlatness: 0,
+    landscapeOpacity: 50,
+    landscapeFlatness: 50,
   }
 
   constructor() {
