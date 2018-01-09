@@ -11,6 +11,31 @@ const OrbitControls = OrbitControlsFactory(THREE);
 
 
 function getOptimizationFunction(name) {
+
+  // Eggholder
+  return function(x, y) {
+    return (-1)*(y+47)*Math.sin(Math.sqrt(Math.abs(x/2 + (y+47))))-x*Math.sin(
+      Math.sqrt(Math.abs(x-(y+47))));
+  }
+
+  // Ackley
+  return function(x, y) {
+    return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI))));
+  }
+
+  // Matyas
+  return function(x, y) {
+    return 0.26*(x^2+y^2) - 0.48*x*y;
+  }
+
+
+  return function(x, y) {
+    return (x^2+y-11)^2 + (x+y^2-7)^2;
+  }
+
+  if (name == "Himmelblau") {
+    return Parser.parse('(x^2 + y - 11 )^2 + (x+y^2-7)^2').toJSFunction(["x", "y"]);
+  }
   if (name === 'sphere') {
     return Parser.parse('(0.005 * x^2 + 0.005 * y^2)').toJSFunction( ['x','y'] );
   }
@@ -70,7 +95,7 @@ class Population {
     this.gBestNumerical = null;
     for (var i=0; i<this.population.length; i++) {
       this.population[i].bestNumerical = testOptimizationFunction(this.population[i], vector);
-      this.population[i].pBest = new THREE.Vector3(this.population[i].x, this.population[i].y, this.population[i].z);
+      this.population[i].pBest = new THREE.Vector3(this.population[i].x, this.population[i].y, this.population[i].bestNumerical);
 
     }
     this.findPopulationBest();
@@ -102,7 +127,7 @@ class Population {
       if (this.optimizeByFunction) {
         particle.velocity = addition_2(particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP ,rand1),subtract_2(this.gBest, particle, phiG, rand2)));
       } else {
-        particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP ,rand1),subtract(this.gBest, particle, phiG, rand2)));
+        particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
 
       }
 
@@ -113,8 +138,9 @@ class Population {
     //  console.log(addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP,rand1),subtract(this.gBest, particle,phiG,rand2))));
 
       // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
-      var LIMIT = 4;
+      var LIMIT = 100;
       //LIMIT = 1;
+      // Limit should depend on the task...
       if (particle.velocity.x < -LIMIT) {
         particle.velocity.x = -LIMIT;
       }
@@ -135,13 +161,47 @@ class Population {
           particle.velocity.z = LIMIT;
         }
       }
+      // If bounded search area.
 
+
+      var axLim = 512;
+      var xMax = axLim,
+          xMin = -axLim,
+          yMax = axLim,
+          yMin = -axLim;
       var newLocation = addition(particle, particle.velocity);
+      if (newLocation.x > xMax) {
+        if (particle.velocity.x > 0) {
+          particle.velocity.x *= -1;
+        }
+        newLocation.x = xMax + particle.velocity.x;
+      } else if (newLocation.x < xMin) {
+          if (particle.velocity.x < 0) {
+            particle.velocity.x *= -1;
+          }
+        newLocation.x = xMin + particle.velocity.x;
+      }
+      if (newLocation.y > yMax) {
+        if (particle.velocity.y > 0) {
+          particle.velocity.y *= -1;
+        }
+          newLocation.y = yMax + particle.velocity.y;
+      } else if (newLocation.y < yMin) {
+        if (particle.velocity.y < 0) {
+          particle.velocity.y *= -1;
+        }
+          newLocation.y = yMin + particle.velocity.y;
+      }
+
+
+
 
       //
       particle.x = newLocation.x;
       particle.y = newLocation.y;
       particle.z = newLocation.z;
+
+
       if (!this.optimizeByFunction) {
         particle.currentNumerical = testOptimizationFunction(particle, this.optimization_goal);
       } else {
@@ -186,14 +246,37 @@ class Population {
   }
 }
 
+
+
+function sleep(ms = 0) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+
 export default class Canvas extends Component {
     animate() {
       var rem = this.animate.bind(this);
       // Can do this better. SetTimeout shouldn't be a good idea
       this.pop.update(this.props.phiP, this.props.phiG);
+      this.sphere.position.x = this.pop.gBest.x;
+      this.sphere.position.y = this.pop.gBest.y;
+      this.sphere.position.z = this.pop.gBest.z * 0.2;
+
+
       this.particleSystem.geometry.verticesNeedUpdate = true;
+       // This hack does not work.. think of something else..
+      for (var i = 0; i < this.particles.vertices.length; i++) {
+        this.particles.vertices[i].z *= 0.2;
+      }
+
+
       this.renderer.render(this.scene, this.camera);
-      requestAnimationFrame(rem);
+      // Add sleep..
+      (async () => {
+        await sleep(100);
+        requestAnimationFrame(rem);
+
+      })();
     }
 
     // FROM HERE ADDITIONS.. RELOCATE.
@@ -238,14 +321,14 @@ export default class Canvas extends Component {
 
         this.pMaterial = new THREE.PointsMaterial({
           size: 10,
-          map: this.createCircleTexture('#00ff00', 256),
+          map: this.createCircleTexture('#ff0000', 256),
           transparent: true,
           depthWrite: false
         })
 
         for (var p = 0; p < this.props.particlesNumber; p++) {
-          var pX = Math.random() * 800 - 400,
-            pY = Math.random() * 800 - 400;
+          var pX = Math.random() * 1024 - 512,
+            pY = Math.random() * 1024 - 512;
             if (this.CLICKABLE_DEMO) {
               var pZ = Math.random() * 800 - 400;
             } else {
@@ -315,11 +398,11 @@ export default class Canvas extends Component {
     }
 
     createGraph() {
-      const segments = 40;
-      const xMin = -100
-      const xMax = 100
-      const yMin = -100
-      const yMax = 100
+      const segments = 200;
+      const xMin = -512;
+      const xMax = 512;
+      const yMin = -512;
+      const yMax = 512;
       const xRange = xMax - xMin;
       const yRange = yMax - yMin;
       const zFunc = getOptimizationFunction(this.props.optimizationFunction);
@@ -327,7 +410,7 @@ export default class Canvas extends Component {
       const meshFunction = (x, y) => {
         x = xRange * x + xMin;
         y = yRange * y + yMin;
-        var z = zFunc(x,y);
+        var z = zFunc(x,y) * 0.2;
         if (isNaN(z))
           return new THREE.Vector3(0,0,0); // TODO: better fix
         else
@@ -376,7 +459,7 @@ export default class Canvas extends Component {
 
       const normMaterial = new THREE.MeshNormalMaterial();
       const shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-      const wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide } );
+      const wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture, vertexColors: THREE.VertexColors, side:THREE.DoubleSide, transparent:true, opacity: 0.5 } );
       const vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 
       if (this.graphMesh) {
@@ -396,9 +479,14 @@ export default class Canvas extends Component {
         this.CLICKABLE_DEMO = false;
 
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 1000 );
+        this.camera = new THREE.PerspectiveCamera(
+          75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 100000 );
 
-        this.renderer = new THREE.WebGLRenderer();
+        // ?
+        //this.camera.near = 0.001;
+        //this.camera.far = 100000;
+        this.camera.up.set(0,0,1);
+        this.renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, antialias:true});
         this.renderer.setSize(this.root.offsetWidth, this.root.offsetHeight);
         this.root.appendChild(this.renderer.domElement);
 
@@ -406,17 +494,25 @@ export default class Canvas extends Component {
 
         // We won't need those otherwise.
         if (this.CLICKABLE_DEMO) {
+          this.ballGeom = new THREE.SphereGeometry( 8, 32, 32 );
+          this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+          this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
+          this.scene.add(this.sphere);
+          this.mouse = { x: 0, y: 0, z: 0 };
+        } else {
           this.ballGeom = new THREE.SphereGeometry( 5, 32, 32 );
           this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
           this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
           this.scene.add(this.sphere);
-
-
-          this.mouse = { x: 0, y: 0, z: 0 };
         }
 
 
-        this.camera.position.set(0, 0, 500);
+        if (this.CLICKABLE_DEMO) {
+          this.camera.position.set(0, 0, 500);
+        } else {
+          // Set camera depending on task
+          this.camera.position.set(0, 0, 750);
+        }
 
         this.setupVisualization();
         this.resetSimulation();
