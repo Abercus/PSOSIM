@@ -2,6 +2,11 @@
     padding-top: 20px;
 }
 
+.options-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .options-header {
     display: flex;
     align-items: center;
@@ -10,4 +15,3 @@
 
 .reset-button {
 }
-

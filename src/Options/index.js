@@ -5,6 +5,7 @@ import Select from 'material-ui/Select';
 import Switch from 'material-ui/Switch';
 import { MenuItem } from 'material-ui/Menu';
 import Paper from 'material-ui/Paper';
+import Button from 'material-ui/Button';
 
 import OptionsGroup from '../OptionsGroup';
 import Slider from '../Slider';
@@ -37,6 +38,7 @@ const Options = ({
     onResetSwarm,
     onResetFunction,
     onResetVisualization,
+    onSimulate,
 }) => (
     <Paper className='options'>
         <OptionsGroup title="Swarm" onReset={onResetSwarm}>
@@ -68,6 +70,7 @@ const Options = ({
                     <Input type='number' value={phiG} onChange={unwrap(onPhiGChange, Number)} />
                 </FormControl>
             </div>
+            <Button className="simulate-btn" raised color="primary" onClick={onSimulate}>Simulate</Button>
         </OptionsGroup>
         <OptionsGroup title="Function" onReset={onResetFunction}>
             <FormControl className='form-control' style={{ minWidth: 210 }}>

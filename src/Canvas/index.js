@@ -107,6 +107,7 @@ class Population {
     this.xMax = xMax;
     this.yMin = yMin;
     this.yMax = yMax;
+    this.referenceTime = new Date().getTime();
   }
 
   set_optimization_goal(vector) {
@@ -138,6 +139,9 @@ class Population {
   update(phiP, phiG) {
     // Learning factors (c1 and c2). These can be sliders later (or input box)
     // TODO: put particle logic into particle's method.
+
+    let newBest = null;
+
     for (let particle of this.population) {
       // Check max/min velocity.... TODO: Put this in update function..
       // Also all subtracting and adding should be in one function.
@@ -226,9 +230,11 @@ class Population {
         if (particle.bestNumerical < this.gBestNumerical) {
           this.gBestNumerical = particle.bestNumerical;
           this.gBest = particle.pBest;
+          newBest = { value: particle.bestNumerical, time: new Date().getTime() - this.referenceTime };
         }
       }
     }
+    return newBest;
   }
 
   findPopulationBest() {
@@ -268,8 +274,11 @@ export default class Canvas extends Component {
     }
 
     updateParticles = throttle(() => {
-      this.pop.update(this.props.phiP, this.props.phiG);
+      const newRecord = this.pop.update(this.props.phiP, this.props.phiG);
       this.particleSystem.geometry.verticesNeedUpdate = true;
+      if (newRecord !== null) {
+        this.props.onImprovement(newRecord);
+      }
     })
 
     animate() {
@@ -279,7 +288,6 @@ export default class Canvas extends Component {
       this.sphere.position.x = this.pop.gBest.x;
       this.sphere.position.y = this.pop.gBest.y;
       this.sphere.position.z = this.pop.gBest.z * this.zScale();
-
 
        // This hack does not work.. think of something else..
       for (var i = 0; i < this.particles.vertices.length; i++) {

@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
-import './style.css';
-import Canvas from '../Canvas';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
-import Options from '../Options';
 import Button from 'material-ui/Button';
 import Dialog, {
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+
+import './style.css';
+
+import Canvas from '../Canvas';
+import Graphs from '../Graphs'
+import Options from '../Options';
 
 
 class App extends Component {
@@ -34,7 +37,10 @@ class App extends Component {
 
   constructor() {
     super();
+    this.index = 0;
     this.state = {
+      fitnesses: [{values: [], index: 0}],
+      currentFitness: 0,
       openCredits: false,
       ...this.swarmDefaults,
       ...this.functionDefaults,
@@ -42,14 +48,23 @@ class App extends Component {
     };
   }
 
+  startSimulation = () => {
+    this.canvas.resetSimulation();
+    this.index += 1;
+    this.setState({
+      fitnesses: this.state.fitnesses.concat([{values: [], index: this.index }]),
+      currentFitness: this.index,
+    });
+  }
+
   resetSwarm = () => {
     this.setState(this.swarmDefaults);
-    this.canvas.resetSimulation();
+    this.startSimulation();
   }
 
   resetFunction = () => {
     this.setState(this.functionDefaults);
-    this.canvas.resetSimulation();
+    this.startSimulation();
   }
 
   resetVisualization = () => {
@@ -60,6 +75,22 @@ class App extends Component {
 
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
+
+  appendHistory = (value) => {
+    const { fitnesses, currentFitness } = this.state;
+    fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([value]);
+    this.setState({
+      fitnesses: fitnesses.slice(),
+    });
+  }
+
+  clearHistory = () => {
+    const { fitnesses, currentFitness } = this.state;
+    this.setState({
+      fitnesses: [fitnesses[currentFitness]],
+      currentFitness: 0,
+    });
+  }
 
   render() {
     return (
@@ -82,6 +113,7 @@ class App extends Component {
             onOmegaChange={this.setValue('omega')}
             onPhiPChange={this.setValue('phiP')}
             onPhiGChange={this.setValue('phiG')}
+
             onOptimizationFunctionChange={this.setValue('optimizationFunction')}
             onPlaybackSpeedChange={this.setValue('playbackSpeed')}
             onLandscapeOpacityChange={this.setValue('landscapeOpacity')}
@@ -89,13 +121,17 @@ class App extends Component {
             onResetSwarm={this.resetSwarm}
             onResetFunction={this.resetFunction}
             onResetVisualization={this.resetVisualization}
+
+            onSimulate={this.startSimulation}
           />
           <main className="App-main">
             <Canvas
               ref={canvas => { this.canvas = canvas; }}
               {...this.state}
+              onImprovement={this.appendHistory}
             />
           </main>
+          <Graphs histories={this.state.fitnesses} onClear={this.clearHistory} />
         </div>
         <Dialog
           open={this.state.openCredits}
