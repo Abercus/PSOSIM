@@ -12,11 +12,18 @@ const OrbitControls = OrbitControlsFactory(THREE);
 
 function getOptimizationFunction(name) {
 
+
   // Eggholder
   return function(x, y) {
     return (-1)*(y+47)*Math.sin(Math.sqrt(Math.abs(x/2 + (y+47))))-x*Math.sin(
       Math.sqrt(Math.abs(x-(y+47))));
   }
+
+  // Sphere
+  return function(x, y) {
+    return (0.005 * Math.pow(x, 2) + 0.005 * Math.pow(y, 2));
+  }
+
 
   // Ackley
   return function(x, y) {
@@ -28,7 +35,7 @@ function getOptimizationFunction(name) {
     return 0.26*(x^2+y^2) - 0.48*x*y;
   }
 
-
+  // Himmelblau
   return function(x, y) {
     return (x^2+y-11)^2 + (x+y^2-7)^2;
   }
@@ -42,25 +49,38 @@ function getOptimizationFunction(name) {
   throw Error();
 }
 
+var mod = function (n, m) {
+    var remain = n % m;
+    return Math.floor(remain >= 0 ? remain : remain + m);
+};
+
+function addition(v1,v2) {
+  return new THREE.Vector3(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
+}
+function addition_w(w,v1,v2) {
+  return new THREE.Vector3(w*(v1.x+v2.x), w*(v1.y+v2.y), w*(v1.z+v2.z));
+}
+
+// Neither
 function addition_2(v1,v2) {
     return new THREE.Vector3(v1.x+v2.x, v1.y+v2.y, v1.z);
 }
-
-function subtract_2(v1,v2,c,rand1) {
-    return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), v1.z);
-
+// With inertia
+function addition_2_w(w,v1,v2) {
+    return new THREE.Vector3(w*(v1.x)+v2.x, w*(v1.y)+v2.y, v1.z);
 }
-
-function addition(v1,v2) {
-  // adds v1 and v2
-
-  return new THREE.Vector3(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
+// With constriction factor
+function addition_3_w(w,v1,v2) {
+    return new THREE.Vector3(w*(v1.x+v2.y), w*(v1.y+v2.y), v1.z);
 }
 
 function subtract(v1,v2,c,rand1) {
   return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), c*rand1*(v1.z-v2.z));
 }
 
+function subtract_2(v1,v2,c,rand1) {
+    return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), v1.z);
+}
 
 function euclidDistance(p1, p2) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2)
@@ -135,19 +155,88 @@ class Population {
     this.findPopulationBest();
   }
 
-  update = throttle((phiP, phiG) => {
-    // Learning factors (c1 and c2). These can be sliders later (or input box)
-    // TODO: put particle logic into particle's method.
-    for (let particle of this.population) {
-      // Check max/min velocity.... TODO: Put this in update function..
-      // Also all subtracting and adding should be in one function.
-      // ARe there vector operations in js?
 
-    //  console.log(addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP,rand1),subtract(this.gBest, particle,phiG,rand2))));
+  updateParticle(particle) {
+    // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
+    var LIMIT = 500;
+    //LIMIT = 1;
+    // Limit should depend on the task...
+    if (particle.velocity.x < -LIMIT) {
+      particle.velocity.x = -LIMIT;
+    }
+    if (particle.velocity.x > LIMIT) {
+      particle.velocity.x = LIMIT;
+    }
+    if (particle.velocity.y < -LIMIT) {
+      particle.velocity.y = -LIMIT;
+    }
+    if (particle.velocity.y > LIMIT) {
+      particle.velocity.y = LIMIT;
+    }
+    if (!this.optimizeByFunction) {
+      if (particle.velocity.z < -LIMIT) {
+        particle.velocity.z = -LIMIT;
+      }
+      if (particle.velocity.z > LIMIT) {
+        particle.velocity.z = LIMIT;
+      }
+    }
+
+    // If bounded search area.
+    var newLocation = addition(particle, particle.velocity);
+    if (newLocation.x > this.xMax) {
+      if (particle.velocity.x > 0) {
+        particle.velocity.x *= -0.5;
+      }
+      newLocation.x = this.xMax;
+    } else if (newLocation.x < this.xMin) {
+        if (particle.velocity.x < 0) {
+          particle.velocity.x *= -0.5;
+        }
+      newLocation.x = this.xMin;
+    }
+    if (newLocation.y > this.yMax) {
+      if (particle.velocity.y > 0) {
+        particle.velocity.y *= -0.5;
+      }
+        newLocation.y = this.yMax;
+    } else if (newLocation.y < this.yMin) {
+      if (particle.velocity.y < 0) {
+        particle.velocity.y *= -0.5;
+      }
+        newLocation.y = this.yMin;
+    }
+
+    particle.x = newLocation.x;
+    particle.y = newLocation.y;
+    particle.z = newLocation.z;
+
+    if (!this.optimizeByFunction) {
+      particle.currentNumerical = testOptimizationFunction(particle, this.optimization_goal);
+    } else {
+      particle.currentNumerical = this.optimization_function(particle.x, particle.y);
+      particle.z = particle.currentNumerical;
+
+    }
+
+    if (particle.currentNumerical < particle.bestNumerical) {
+      particle.pBest = new THREE.Vector3(particle.x, particle.y, particle.z);
+      particle.bestNumerical = particle.currentNumerical;
+      if (particle.bestNumerical < this.gBestNumerical) {
+        this.gBestNumerical = particle.bestNumerical;
+        this.gBest = particle.pBest;
+      }
+    }
+
+  }
+
+  update(omega, phiP, phiG) {
+    for (let particle of this.population) {
       if (this.optimizeByFunction) {
         var rand1 = Math.random();
         var rand2 = Math.random();
-        particle.velocity = addition_2(
+        particle.velocity = addition_2_w(
+          omega,
           particle.velocity,
           addition_2(
             subtract_2(particle.pBest, particle, phiP, rand1),
@@ -155,81 +244,94 @@ class Population {
           )
         );
       } else {
-        particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
+        particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
       }
 
-      // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
-      var LIMIT = 100;
-      //LIMIT = 1;
-      // Limit should depend on the task...
-      if (particle.velocity.x < -LIMIT) {
-        particle.velocity.x = -LIMIT;
-      }
-      if (particle.velocity.x > LIMIT) {
-        particle.velocity.x = LIMIT;
-      }
-      if (particle.velocity.y < -LIMIT) {
-        particle.velocity.y = -LIMIT;
-      }
-      if (particle.velocity.y > LIMIT) {
-        particle.velocity.y = LIMIT;
-      }
-      if (!this.optimizeByFunction) {
-        if (particle.velocity.z < -LIMIT) {
-          particle.velocity.z = -LIMIT;
-        }
-        if (particle.velocity.z > LIMIT) {
-          particle.velocity.z = LIMIT;
-        }
-      }
+      this.updateParticle(particle);
 
-      // If bounded search area.
-      var newLocation = addition(particle, particle.velocity);
-      if (newLocation.x > this.xMax) {
-        if (particle.velocity.x > 0) {
-          particle.velocity.x *= -1;
-        }
-        newLocation.x = this.xMax + particle.velocity.x;
-      } else if (newLocation.x < this.xMin) {
-          if (particle.velocity.x < 0) {
-            particle.velocity.x *= -1;
-          }
-        newLocation.x = this.xMin + particle.velocity.x;
-      }
-      if (newLocation.y > this.yMax) {
-        if (particle.velocity.y > 0) {
-          particle.velocity.y *= -1;
-        }
-          newLocation.y = this.yMax + particle.velocity.y;
-      } else if (newLocation.y < this.yMin) {
-        if (particle.velocity.y < 0) {
-          particle.velocity.y *= -1;
-        }
-          newLocation.y = this.yMin + particle.velocity.y;
-      }
+    }
+  }
 
-      particle.x = newLocation.x;
-      particle.y = newLocation.y;
-      particle.z = newLocation.z;
+  updateRing(omega, phiP, phiG) {
+      for (var i=0; i<this.population.length; i++) {
+        var rand1 = Math.random();
+        var rand2 = Math.random();
+        var particle = this.population[i];
+        var left_neighbour = this.population[mod(i-1, this.population.length)];
+        var right_neighbour = this.population[mod(i+1, this.population.length)];
+        // Who has the best personalBest
+        var pB = particle.pBest;
+        var pbNum = particle.bestNumerical;
 
-      if (!this.optimizeByFunction) {
-        particle.currentNumerical = testOptimizationFunction(particle, this.optimization_goal);
-      } else {
-        particle.currentNumerical = this.optimization_function(particle.x, particle.y);
-        particle.z = particle.currentNumerical;
-
-      }
-
-      if (particle.currentNumerical < particle.bestNumerical) {
-        particle.pBest = new THREE.Vector3(particle.x, particle.y, particle.z);
-        particle.bestNumerical = particle.currentNumerical;
-        if (particle.bestNumerical < this.gBestNumerical) {
-          this.gBestNumerical = particle.bestNumerical;
-          this.gBest = particle.pBest;
+        if (left_neighbour.bestNumerical < pbNum) {
+          pbNum = left_neighbour.bestNumerical;
+          pB = left_neighbour.pBest;
         }
+        if (right_neighbour.bestNumerical < pbNum) {
+          pbNum = right_neighbour.bestNumerical;
+          pB = right_neighbour.pBest;
+        }
+
+        if (this.optimizeByFunction) {
+            particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
+        } else {
+            particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
+        }
+        this.updateParticle(particle);
       }
     }
-  })
+
+    updateRandomAdaptive(omega, phiP, phiG) {
+
+        // Network does not exist yet.
+        var k = 3;
+        if (this.previousGBestNumerical) {
+          if (this.previousGBestNumerical == this.gBestNumerical) {
+            this.adaptionNetwork = null;
+          }
+        }
+        this.previousGBestNumerical=this.gBestNumerical;
+        // Array of arrays.
+        if (!this.adaptionNetwork) {
+          // k = 3
+          this.adaptionNetwork = new Array(this.population.length);
+          for (var i=0; i<this.population.length; i++) {
+            this.adaptionNetwork[i] = [i]; // Everyone informs themselves
+          }
+
+          // Everyone informs k randoms
+          for (var i=0; i<this.population.length; i++) {
+            for (var j=0; j<k; j++) {
+              this.adaptionNetwork[Math.floor(Math.random()*this.population.length)].push(i);
+            }
+          }
+        }
+
+        // update particles
+        for (var i=0; i<this.population.length; i++) {
+          var particle = this.population[i];
+          var rand1 = Math.random();
+          var rand2 = Math.random();
+
+          // Check through particles in its Network
+          var pb = particle.pBest;
+          var pbNum = particle.bestNumerical;
+          for (var ind in this.adaptionNetwork[i]) {
+            if (this.population[ind].bestNumerical < pbNum) {
+              pbNum = this.population[ind].bestNumerical;
+              pb = this.population[ind].pBest;
+            }
+          }
+
+          if (this.optimizeByFunction) {
+            particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pb, particle, phiG, rand2)));
+          } else {
+            particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
+          }
+
+          this.updateParticle(particle);
+        }
+    }
 
   findPopulationBest() {
     var bestNumerical = this.population[0].bestNumerical;
@@ -267,23 +369,45 @@ export default class Canvas extends Component {
       this.yRange = this.yMax - this.yMin;
     }
 
+
+    updateParticles = throttle(() => {
+//      this.pop.update(this.props.omega, this.props.phiP, this.props.phiG);
+      this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
+//      this.pop.updateRing(this.props.omega, this.props.phiP, this.props.phiG);
+      this.particleSystem.geometry.verticesNeedUpdate = true;
+    })
+
+    startAnimating(fps) {
+        this.fpsInterval = 1000 / fps;
+        this.then = Date.now();
+        this.startTime = this.then;
+        this.animate();
+    }
     animate() {
       var rem = this.animate.bind(this);
-      // Can do this better. SetTimeout shouldn't be a good idea
-      this.pop.update(this.props.phiP, this.props.phiG);
-      this.sphere.position.x = this.pop.gBest.x;
-      this.sphere.position.y = this.pop.gBest.y;
-      this.sphere.position.z = this.pop.gBest.z * this.zScale();
 
-
-      this.particleSystem.geometry.verticesNeedUpdate = true;
-       // This hack does not work.. think of something else..
-      for (var i = 0; i < this.particles.vertices.length; i++) {
-        this.particles.vertices[i].z *= this.zScale();
-      }
-
-      this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(rem);
+
+
+      var now = Date.now();
+      var elapsed = now - this.then;
+      // Can do this better. SetTimeout shouldn't be a good idea
+      if (elapsed > this.fpsInterval) {
+          this.then = now - (elapsed % this.fpsInterval);
+          this.updateParticles();
+          this.sphere.position.x = this.pop.gBest.x;
+          this.sphere.position.y = this.pop.gBest.y;
+          this.sphere.position.z = this.pop.gBest.z * this.zScale();
+
+          this.particleSystem.geometry.verticesNeedUpdate = true;
+           // This hack does not work.. think of something else..
+          for (var i = 0; i < this.particles.vertices.length; i++) {
+            this.particles.vertices[i].z *= this.zScale();
+          }
+
+
+          this.renderer.render(this.scene, this.camera);
+      }
     }
 
     zScale(landscapeFlatness = this.props.landscapeFlatness) {
@@ -347,7 +471,10 @@ export default class Canvas extends Component {
             }
 
             var particle = new THREE.Vector3(pX, pY, pZ);
-            particle.velocity = new THREE.Vector3(0,0,0);
+            //particle.velocity = new THREE.Vector3((Math.random()*1024-512 - pX)/2, (Math.random()*1024-512 - pY)/2, 0);
+            // TODO: velocity initialization
+            particle.velocity = new THREE.Vector3(Math.random()*20-10, Math.random()*20-10, 0);
+
             if (this.CLICKABLE_DEMO) {
               particle.bestNumerical = testOptimizationFunction(particle,
                 this.sphere.position);
@@ -554,7 +681,7 @@ export default class Canvas extends Component {
             10000);
         }
 
-        this.animate();
+        this.startAnimating(30);
     }
 
     componentDidMount() {
@@ -568,7 +695,7 @@ export default class Canvas extends Component {
 
     componentWillReceiveProps(nextProps) {
       if (nextProps.playbackSpeed !== this.props.playbackSpeed) {
-        this.pop.update.setWait(1000 / nextProps.playbackSpeed);
+        this.updateParticles.setWait(1000 / nextProps.playbackSpeed);
       }
       if (nextProps.landscapeFlatness !== this.props.landscapeFlatness) {
         const zFunc = getOptimizationFunction(this.props.optimizationFunction);
