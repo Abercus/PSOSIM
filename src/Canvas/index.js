@@ -276,17 +276,14 @@ class Population {
 
     }
 
-    let best = null;
     if (particle.currentNumerical < particle.bestNumerical) {
       particle.pBest = new THREE.Vector3(particle.x, particle.y, particle.z);
       particle.bestNumerical = particle.currentNumerical;
       if (particle.bestNumerical < this.gBestNumerical) {
         this.gBestNumerical = particle.bestNumerical;
         this.gBest = particle.pBest;
-        best = { time: new Date().getTime() - this.referenceTime, value: particle.bestNumerical };
       }
     }
-    return best;
   }
 
   updateGlobal(omega, phiP, phiG) {
@@ -307,10 +304,8 @@ class Population {
         particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
       }
 
-      const result = this.updateParticle(particle);
-      best = result || best;
+      this.updateParticle(particle);
     }
-    return best;
   }
 
   updateRing(omega, phiP, phiG) {
@@ -339,10 +334,8 @@ class Population {
       } else {
           particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
       }
-      const result = this.updateParticle(particle);
-      best = result || best;
+      this.updateParticle(particle);
     }
-    return best;
   }
 
     updateRandomAdaptive(omega, phiP, phiG) {
@@ -372,7 +365,6 @@ class Population {
         }
 
         // update particles
-        let best = null;
         for (var i=0; i<this.population.length; i++) {
           var particle = this.population[i];
           var rand1 = Math.random();
@@ -394,10 +386,8 @@ class Population {
             particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
           }
 
-          const result = this.updateParticle(particle);
-          best = result || best;
+          this.updateParticle(particle);
         }
-        return best;
     }
 
   findPopulationBest() {
@@ -430,13 +420,17 @@ export default class Canvas extends Component {
       this.segments = 200;
     }
 
-
     updateParticles = throttle(() => {
+      const prevBest = this.pop.gBestNumerical;
       this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG);
-      const newRecord = this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
+      this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
       this.particleSystem.geometry.verticesNeedUpdate = true;
-      if (newRecord !== null) {
-        this.props.onImprovement(newRecord);
+      if (this.pop.gBestNumerical < prevBest) {
+        console.log(this.pop.gBestNumerical);
+        this.props.onImprovement({
+          time: new Date().getTime() - this.pop.referenceTime,
+          value: this.pop.gBestNumerical,
+        });
       }
     })
 
