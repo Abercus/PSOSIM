@@ -26,7 +26,7 @@ class App extends Component {
   }
 
   functionDefaults = {
-    optimizationFunction: 'sphere',
+    optimizationFunction: 'matyas',
   }
 
   visualizationDefaults = {

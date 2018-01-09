@@ -52,6 +52,7 @@ const Options = ({
                     onChange={unwrap(onTopologyChange)}
                 >
                     <MenuItem value='global'>Global</MenuItem>
+                    <MenuItem value='ring'>Ring</MenuItem>
                     <MenuItem value='random'>Random adaptive</MenuItem>
                 </Select>
             </FormControl>
@@ -79,7 +80,12 @@ const Options = ({
                     onChange={unwrap(onOptimizationFunctionChange)}
                     autoWidth
                 >
+                    <MenuItem value='matyas'>Matyas</MenuItem>
+                    <MenuItem value='ackley'>Ackley</MenuItem>
+                    <MenuItem value='himmelblau'>Himmelblau</MenuItem>
+                    <MenuItem value='eggholder'>Eggholder</MenuItem>
                     <MenuItem value='sphere'>Sphere</MenuItem>
+                    <MenuItem value='demo'>Demo</MenuItem>
                 </Select>
             </FormControl>
         </OptionsGroup>
@@ -94,7 +100,7 @@ const Options = ({
             </FormControl>
             <FormControl className='form-control'>
                 <FormLabel>Landscape Flatness</FormLabel>
-                <Slider step={25} value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
+                <Slider step={10} value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
             </FormControl>
         </OptionsGroup>
     </Paper>
