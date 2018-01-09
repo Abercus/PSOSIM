@@ -16,25 +16,31 @@ function getOptimizationParams(name) {
   if (name == "matyas") {
     return {xMin:-5, xMax:5,
       yMin:-5, yMax:5,
-      speed:0.0001, cameraHeight:20,
+      speed:0.1, cameraHeight:20,
       particleSize: 0.2};
   }
   if (name == "himmelblau") {
     return {xMin:-5, xMax:5,
       yMin:-5, yMax:5,
-      speed:0.0001, cameraHeight:20,
+      speed:0.1, cameraHeight:20,
       particleSize: 0.2};
   }
   else if (name == "ackley") {
       return {xMin:-5, xMax:5,
         yMin:-5, yMax:5,
-        speed:0.01, cameraHeight:10,
+        speed:0.1, cameraHeight:10,
         particleSize: 0.07};
   } else if (name == "eggholder") {
     return {xMin:-512, xMax:512,
       yMin:-512, yMax:512,
       speed:10, cameraHeight:750,
       particleSize: 10};
+  } else if (name == "sphere") {
+    return {xMin:-512, xMax:512,
+      yMin:-512, yMax:512,
+      speed:5, cameraHeight:750,
+      particleSize: 10};
+
   }
 
   return {xMin:-512, xMax:512,
@@ -135,8 +141,11 @@ function testOptimizationFunction(p, opt_vector) {
   return euclidDistance(p, opt_vector);
 }
 
+
+(Math.random() * (0.120 - 0.0200) + 0.0200).toFixed(4)
+
 function generateRandom(min, max) {
-  return min + Math.random()*(max+1 - min)
+  return  Math.random()*(min - max) + max;
 }
 
 
@@ -165,10 +174,11 @@ function throttle(callback, wait=0, context = this) {
 
 // Class for whole population
 class Population {
-  constructor(pop, optimizeByFunction, topology, xMin, xMax, yMin, yMax) {
+  constructor(pop, optimizeByFunction, topology, speed, xMin, xMax, yMin, yMax) {
     this.population = pop;
     this.gBest = null;
     this.gBestNumerical = null;
+    this.speed = speed;
     this.optimizeByFunction = optimizeByFunction;
     this.xMin = xMin;
     this.xMax = xMax;
@@ -215,7 +225,7 @@ class Population {
 
   updateParticle(particle) {
     // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
-    var LIMIT = 20;
+    var LIMIT = this.speed;
     //LIMIT = 1;
     // Limit should depend on the task...
     if (particle.velocity.x < -LIMIT) {
@@ -423,10 +433,19 @@ export default class Canvas extends Component {
     updateParticles = throttle(() => {
       const prevBest = this.pop.gBestNumerical;
       this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG);
-      this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
+
+      this.sphere.position.x = this.pop.gBest.x;
+      this.sphere.position.y = this.pop.gBest.y;
+      this.sphere.position.z = this.pop.gBest.z * this.zScale();
+
+      this.particleSystem.geometry.verticesNeedUpdate = true;
+      for (var i = 0; i < this.particles.vertices.length; i++) {
+        this.particles.vertices[i].z *= this.zScale();
+      }
+
+
       this.particleSystem.geometry.verticesNeedUpdate = true;
       if (this.pop.gBestNumerical < prevBest) {
-        console.log(this.pop.gBestNumerical);
         this.props.onImprovement({
           time: new Date().getTime() - this.pop.referenceTime,
           value: this.pop.gBestNumerical,
@@ -452,15 +471,6 @@ export default class Canvas extends Component {
       if (elapsed > this.fpsInterval) {
           this.then = now - (elapsed % this.fpsInterval);
           this.updateParticles();
-          this.sphere.position.x = this.pop.gBest.x;
-          this.sphere.position.y = this.pop.gBest.y;
-          this.sphere.position.z = this.pop.gBest.z * this.zScale();
-
-          this.particleSystem.geometry.verticesNeedUpdate = true;
-           // This hack does not work.. think of something else..
-          for (var i = 0; i < this.particles.vertices.length; i++) {
-            this.particles.vertices[i].z *= this.zScale();
-          }
 
 
           this.renderer.render(this.scene, this.camera);
@@ -511,7 +521,6 @@ export default class Canvas extends Component {
 
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction) {
             // MOve this
-            console.log(this.previousOptFunct, optimizationFunction)
             this.xMin = this.params.xMin;
             this.xMax = this.params.xMax;
             this.yMin = this.params.yMin;
@@ -519,7 +528,9 @@ export default class Canvas extends Component {
             this.xRange = this.xMax - this.xMin;
             this.yRange = this.yMax - this.yMin;
             this.particleSize = this.params.particleSize;
-            this.createGraph();
+            if (!this.CLICKABLE_DEMO) {
+              this.createGraph();
+            }
 
             this.scene.remove(this.sphere);
 
@@ -545,12 +556,12 @@ export default class Canvas extends Component {
         })
 
         for (var p = 0; p < this.props.particlesNumber; p++) {
-          var pX = generateRandom(this.params.xMin, this.params.xMax),
-            pY = generateRandom(this.params.yMin, this.params.yMax);
+          var pX = generateRandom(this.params.xMin*0.99, this.params.xMax*0.99),
+            pY = generateRandom(this.params.yMin*0.99, this.params.yMax*0.99);
             if (this.CLICKABLE_DEMO) {
               var pZ = Math.random() * 800 - 400;
             } else {
-              var pZ = optimizationFunction(pX, pY);
+              var pZ = optimizationFunction(pX, pY) * this.zScale();
             }
 
             var particle = new THREE.Vector3(pX, pY, pZ);
@@ -579,14 +590,17 @@ export default class Canvas extends Component {
         this.particleSystem.sortParticles = true;
         const bounds = [this.xMin, this.xMax, this.yMin, this.yMax];
         if (this.CLICKABLE_DEMO) {
-          this.pop = new Population(this.particles.vertices, false, this.props.topology, ...bounds);
+          this.pop = new Population(this.particles.vertices, false, this.props.topology, this.params.speed, ...bounds);
           this.pop.set_optimization_goal(this.sphere.position);
 
         } else {
-          this.pop = new Population(this.particles.vertices, true, this.props.topology, ...bounds);
+          this.pop = new Population(this.particles.vertices, true, this.props.topology, this.params.speed, ...bounds);
           this.pop.set_optimization_function(optimizationFunction);
         }
-
+        this.props.onImprovement({
+          time: new Date().getTime() - this.pop.referenceTime,
+          value: this.pop.gBestNumerical,
+        });
         this.particleSystem.geometry.verticesNeedUpdate = true;
 
         this.scene.add(this.particleSystem);
@@ -612,10 +626,6 @@ export default class Canvas extends Component {
         // bgcolor
         this.renderer.setClearColor( 0xbebebe, 1 );
 
-        // Don't draw graph if not clickable demo.
-        //if (!this.CLICKABLE_DEMO) {
-        //  this.createGraph();
-        //}
     }
 
     setupLandscapeColors(graphGeometry) {
@@ -663,7 +673,6 @@ export default class Canvas extends Component {
 
       // true => sensible image tile repeat...
       const graphGeometry = new THREE.ParametricGeometry(meshFunction, this.segments, this.segments, true );
-      console.log(graphGeometry);
       this.setupLandscapeColors(graphGeometry);
 
       // material choices: vertexColorMaterial, wireMaterial , normMaterial , shadeMaterial

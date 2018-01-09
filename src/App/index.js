@@ -18,7 +18,7 @@ import Options from '../Options';
 
 class App extends Component {
   swarmDefaults = {
-    particlesNumber: 40,
+    particlesNumber: 15,
     topology: 'global',
     omega: 0.768,
     phiP: 0.5,
