@@ -15,9 +15,13 @@ class App extends Component {
   }
 
   functionDefaults = {
-    dimensions: '2d',
-    optimasNumber: 1,
-    optimizationFunction: 'sphere'
+    optimizationFunction: 'sphere',
+  }
+
+  visualizationDefaults = {
+    playbackSpeed: 60,
+    landscapeOpacity: 100,
+    landscapeFlatness: 0,
   }
 
   constructor() {
@@ -25,6 +29,7 @@ class App extends Component {
     this.state = {
       ...this.swarmDefaults,
       ...this.functionDefaults,
+      ...this.visualizationDefaults
     };
   }
 
@@ -36,6 +41,10 @@ class App extends Component {
   resetFunction = () => {
     this.setState(this.functionDefaults);
     this.canvas.resetSimulation();
+  }
+
+  resetVisualization = () => {
+    this.setState(this.visualizationDefaults);
   }
 
   setValue = (field) => (value) => this.setState({ [field]: value })
@@ -53,11 +62,13 @@ class App extends Component {
             onOmegaChange={this.setValue('omega')}
             onPhiPChange={this.setValue('phiP')}
             onPhiGChange={this.setValue('phiG')}
-            onDimensionsChange={this.setValue('dimensions')}
-            onOptimasNumberChange={this.setValue('optimasNumber')}
             onOptimizationFunctionChange={this.setValue('optimizationFunction')}
+            onPlaybackSpeedChange={this.setValue('playbackSpeed')}
+            onLandscapeOpacityChange={this.setValue('landscapeOpacity')}
+            onLandscapeFlatnessChange={this.setValue('landscapeFlatness')}
             onResetSwarm={this.resetSwarm}
             onResetFunction={this.resetFunction}
+            onResetVisualization={this.resetVisualization}
           />
           <main className="App-main">
             <Canvas

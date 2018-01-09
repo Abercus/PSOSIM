@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl } from 'material-ui/Form';
+import { FormControl, FormLabel } from 'material-ui/Form';
 import Input, { InputLabel } from 'material-ui/Input';
 import Select from 'material-ui/Select';
 import Switch from 'material-ui/Switch';
@@ -7,9 +7,10 @@ import { MenuItem } from 'material-ui/Menu';
 import Paper from 'material-ui/Paper';
 
 import OptionsGroup from '../OptionsGroup';
+import Slider from '../Slider';
 
 import './style.css';
-
+import 'rc-slider/assets/index.css';
 
 const unwrap = (handler, type=String) => (event) => handler(type(event.target.value));
 
@@ -20,19 +21,22 @@ const Options = ({
     omega,
     phiP,
     phiG,
-    dimensions,
-    optimasNumber,
     optimizationFunction,
+    playbackSpeed,
+    landscapeOpacity,
+    landscapeFlatness,
     onParticlesNumberChange,
     onTopologyChange,
     onOmegaChange,
     onPhiPChange,
     onPhiGChange,
-    onDimensionsChange,
-    onOptimasNumberChange,
     onOptimizationFunctionChange,
+    onPlaybackSpeedChange,
+    onLandscapeOpacityChange,
+    onLandscapeFlatnessChange,
     onResetSwarm,
     onResetFunction,
+    onResetVisualization,
 }) => (
     <Paper className='options'>
         <OptionsGroup title="Swarm" onReset={onResetSwarm}>
@@ -66,18 +70,6 @@ const Options = ({
             </div>
         </OptionsGroup>
         <OptionsGroup title="Function" onReset={onResetFunction}>
-            <span className="dimension-switch">
-                <span>2D</span>
-                <Switch
-                    checked={dimensions === '3D'}
-                    onChange={(_, value) => onDimensionsChange(value ? '3D' : '2D')}
-                />
-                <span>3D</span>
-            </span>
-            <FormControl className='form-control'>
-                <InputLabel htmlFor='optimas-number'>Number of optimas</InputLabel>
-                <Input type='number' value={optimasNumber} onChange={unwrap(onOptimasNumberChange, Number)} />
-            </FormControl>
             <FormControl className='form-control' style={{ minWidth: 210 }}>
                 <InputLabel>Optimization function</InputLabel>
                 <Select
@@ -87,6 +79,20 @@ const Options = ({
                 >
                     <MenuItem value='sphere'>Sphere</MenuItem>
                 </Select>
+            </FormControl>
+        </OptionsGroup>
+        <OptionsGroup title="Visualization" onReset={onResetVisualization}>
+            <FormControl className='form-control'>
+                <FormLabel>Playback Speed</FormLabel>
+                <Slider min={1} max={60} value={playbackSpeed} onChange={onPlaybackSpeedChange}/>
+            </FormControl>
+            <FormControl className='form-control'>
+                <FormLabel>Landscape Opacity</FormLabel>
+                <Slider value={landscapeOpacity} onChange={onLandscapeOpacityChange}/>
+            </FormControl>
+            <FormControl className='form-control'>
+                <FormLabel>Landscape Flatness</FormLabel>
+                <Slider value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
             </FormControl>
         </OptionsGroup>
     </Paper>

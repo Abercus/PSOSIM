@@ -42,18 +42,14 @@ function getOptimizationFunction(name) {
   throw Error();
 }
 
-
-
 function addition_2(v1,v2) {
     return new THREE.Vector3(v1.x+v2.x, v1.y+v2.y, v1.z);
-
 }
 
 function subtract_2(v1,v2,c,rand1) {
     return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), v1.z);
 
 }
-
 
 function addition(v1,v2) {
   // adds v1 and v2
@@ -77,6 +73,28 @@ function testOptimizationFunction(p, opt_vector) {
   return euclidDistance(p, opt_vector);
 }
 
+function throttle(callback, wait=0, context = this) {
+  let timeout = null
+  let callbackArgs = null
+
+  const later = () => {
+    callback.apply(context, callbackArgs)
+    timeout = null
+  }
+
+  function throttled() {
+    if (!timeout) {
+      callbackArgs = arguments
+      timeout = setTimeout(later, wait)
+    }
+  }
+
+  throttled.setWait = (newWait) => {
+    wait = newWait;
+  };
+
+  return throttled;
+}
 
 // Class for whole population
 class Population {
@@ -86,7 +104,6 @@ class Population {
     this.gBestNumerical = null;
     this.optimizeByFunction = optimizeByFunction;
   }
-
 
   set_optimization_goal(vector) {
     this.optimization_goal = vector;
@@ -102,7 +119,6 @@ class Population {
 
   }
 
-
   set_optimization_function(func) {
     this.optimization_function = func;
     this.gBest = null;
@@ -115,27 +131,28 @@ class Population {
     this.findPopulationBest();
   }
 
-
-
-  update(phiP, phiG) {
+  update = throttle((phiP, phiG) => {
     // Learning factors (c1 and c2). These can be sliders later (or input box)
     // TODO: put particle logic into particle's method.
-    for (var i=0; i<this.population.length; i++) {
-      var particle = this.population[i];
-      var rand1 = Math.random();
-      var rand2 = Math.random();
-      if (this.optimizeByFunction) {
-        particle.velocity = addition_2(particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP ,rand1),subtract_2(this.gBest, particle, phiG, rand2)));
-      } else {
-        particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
-
-      }
-
+    for (let particle of this.population) {
       // Check max/min velocity.... TODO: Put this in update function..
       // Also all subtracting and adding should be in one function.
       // ARe there vector operations in js?
 
     //  console.log(addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP,rand1),subtract(this.gBest, particle,phiG,rand2))));
+      if (this.optimizeByFunction) {
+        var rand1 = Math.random();
+        var rand2 = Math.random();
+        particle.velocity = addition_2(
+          particle.velocity,
+          addition_2(
+            subtract_2(particle.pBest, particle, phiP, rand1),
+            subtract_2(this.gBest, particle, phiG, rand2)
+          )
+        );
+      } else {
+        particle.velocity = addition(particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
+      }
 
       // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
       var LIMIT = 100;
@@ -193,14 +210,9 @@ class Population {
           newLocation.y = yMin + particle.velocity.y;
       }
 
-
-
-
-      //
       particle.x = newLocation.x;
       particle.y = newLocation.y;
       particle.z = newLocation.z;
-
 
       if (!this.optimizeByFunction) {
         particle.currentNumerical = testOptimizationFunction(particle, this.optimization_goal);
@@ -219,8 +231,7 @@ class Population {
         }
       }
     }
-  }
-
+  })
 
   findPopulationBest() {
     var bestNumerical = this.population[0].bestNumerical;
@@ -246,13 +257,6 @@ class Population {
   }
 }
 
-
-
-function sleep(ms = 0) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-
 export default class Canvas extends Component {
     animate() {
       var rem = this.animate.bind(this);
@@ -269,14 +273,8 @@ export default class Canvas extends Component {
         this.particles.vertices[i].z *= 0.2;
       }
 
-
       this.renderer.render(this.scene, this.camera);
-      // Add sleep..
-      (async () => {
-        await sleep(100);
-        requestAnimationFrame(rem);
-
-      })();
+      requestAnimationFrame(rem);
     }
 
     // FROM HERE ADDITIONS.. RELOCATE.
@@ -348,8 +346,6 @@ export default class Canvas extends Component {
             // add it to the geometry
             this.particles.vertices.push(particle);
         }
-
-
 
         this.particleSystem = new THREE.Points(
             this.particles,
@@ -490,8 +486,6 @@ export default class Canvas extends Component {
         this.renderer.setSize(this.root.offsetWidth, this.root.offsetHeight);
         this.root.appendChild(this.renderer.domElement);
 
-
-
         // We won't need those otherwise.
         if (this.CLICKABLE_DEMO) {
           this.ballGeom = new THREE.SphereGeometry( 8, 32, 32 );
@@ -552,7 +546,6 @@ export default class Canvas extends Component {
         this.animate();
     }
 
-
     componentDidMount() {
         this.trackResize();
         this.setupScene();
@@ -562,9 +555,13 @@ export default class Canvas extends Component {
       return false;
     }
 
+    componentWillReceiveProps(nextProps) {
+      if (nextProps.playbackSpeed !== this.props.playbackSpeed) {
+        this.pop.update.setWait(1000 / this.props.playbackSpeed);
+      }
+    }
+
     render() {
         return <div className="Canvas" ref={root => { this.root = root; }}></div>
     }
-
-
 }

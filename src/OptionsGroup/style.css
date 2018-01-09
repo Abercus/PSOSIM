@@ -1,4 +1,4 @@
-.options-group {
+.options-group:not(:first-child) {
     padding-top: 20px;
 }
 
