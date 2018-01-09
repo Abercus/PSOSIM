@@ -397,7 +397,7 @@ export default class Canvas extends Component {
         // floor.rotation.x = Math.PI / 2;
         this.scene.add(floor);
         // bgcolor
-        this.renderer.setClearColor( 0x888888, 1 );
+        this.renderer.setClearColor( 0xbebebe, 1 );
 
         // Don't draw graph if not clickable demo.
         if (!this.CLICKABLE_DEMO) {
