@@ -18,9 +18,9 @@ import Options from '../Options';
 
 class App extends Component {
   swarmDefaults = {
-    particlesNumber: 12,
+    particlesNumber: 40,
     topology: 'global',
-    omega: 0.5,
+    omega: 0.768,
     phiP: 0.5,
     phiG: 0.5,
   }
@@ -32,7 +32,7 @@ class App extends Component {
   visualizationDefaults = {
     playbackSpeed: 60,
     landscapeOpacity: 50,
-    landscapeFlatness: 50,
+    landscapeFlatness: 70,
   }
 
   constructor() {
@@ -53,7 +53,7 @@ class App extends Component {
     this.index += 1;
     this.setState({
       fitnesses: this.state.fitnesses.concat([{values: [], index: this.index }]),
-      currentFitness: this.index,
+      currentFitness: this.state.fitnesses.length,
     });
   }
 
