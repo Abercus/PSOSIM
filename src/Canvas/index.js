@@ -174,6 +174,7 @@ class Population {
     this.xMax = xMax;
     this.yMin = yMin;
     this.yMax = yMax;
+    this.referenceTime = new Date().getTime();
     if (topology === "global") {
       this.updateFn = this.updateGlobal;
     } else if (topology === "random") {
@@ -275,18 +276,21 @@ class Population {
 
     }
 
+    let best = null;
     if (particle.currentNumerical < particle.bestNumerical) {
       particle.pBest = new THREE.Vector3(particle.x, particle.y, particle.z);
       particle.bestNumerical = particle.currentNumerical;
       if (particle.bestNumerical < this.gBestNumerical) {
         this.gBestNumerical = particle.bestNumerical;
         this.gBest = particle.pBest;
+        best = { time: new Date().getTime() - this.referenceTime, value: particle.bestNumerical };
       }
     }
-
+    return best;
   }
 
   updateGlobal(omega, phiP, phiG) {
+    let best = null;
     for (let particle of this.population) {
       if (this.optimizeByFunction) {
         var rand1 = Math.random();
@@ -303,39 +307,43 @@ class Population {
         particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
       }
 
-      this.updateParticle(particle);
-
+      const result = this.updateParticle(particle);
+      best = result || best;
     }
+    return best;
   }
 
   updateRing(omega, phiP, phiG) {
-      for (var i=0; i<this.population.length; i++) {
-        var rand1 = Math.random();
-        var rand2 = Math.random();
-        var particle = this.population[i];
-        var left_neighbour = this.population[mod(i-1, this.population.length)];
-        var right_neighbour = this.population[mod(i+1, this.population.length)];
-        // Who has the best personalBest
-        var pB = particle.pBest;
-        var pbNum = particle.bestNumerical;
+    let best = null;
+    for (var i=0; i<this.population.length; i++) {
+      var rand1 = Math.random();
+      var rand2 = Math.random();
+      var particle = this.population[i];
+      var left_neighbour = this.population[mod(i-1, this.population.length)];
+      var right_neighbour = this.population[mod(i+1, this.population.length)];
+      // Who has the best personalBest
+      var pB = particle.pBest;
+      var pbNum = particle.bestNumerical;
 
-        if (left_neighbour.bestNumerical < pbNum) {
-          pbNum = left_neighbour.bestNumerical;
-          pB = left_neighbour.pBest;
-        }
-        if (right_neighbour.bestNumerical < pbNum) {
-          pbNum = right_neighbour.bestNumerical;
-          pB = right_neighbour.pBest;
-        }
-
-        if (this.optimizeByFunction) {
-            particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
-        } else {
-            particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
-        }
-        this.updateParticle(particle);
+      if (left_neighbour.bestNumerical < pbNum) {
+        pbNum = left_neighbour.bestNumerical;
+        pB = left_neighbour.pBest;
       }
+      if (right_neighbour.bestNumerical < pbNum) {
+        pbNum = right_neighbour.bestNumerical;
+        pB = right_neighbour.pBest;
+      }
+
+      if (this.optimizeByFunction) {
+          particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
+      } else {
+          particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
+      }
+      const result = this.updateParticle(particle);
+      best = result || best;
     }
+    return best;
+  }
 
     updateRandomAdaptive(omega, phiP, phiG) {
 
@@ -364,6 +372,7 @@ class Population {
         }
 
         // update particles
+        let best = null;
         for (var i=0; i<this.population.length; i++) {
           var particle = this.population[i];
           var rand1 = Math.random();
@@ -385,8 +394,10 @@ class Population {
             particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
           }
 
-          this.updateParticle(particle);
+          const result = this.updateParticle(particle);
+          best = result || best;
         }
+        return best;
     }
 
   findPopulationBest() {
@@ -422,9 +433,11 @@ export default class Canvas extends Component {
 
     updateParticles = throttle(() => {
       this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG);
-      //this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
-      //this.pop.updateRing(this.props.omega, this.props.phiP, this.props.phiG);
+      const newRecord = this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
       this.particleSystem.geometry.verticesNeedUpdate = true;
+      if (newRecord !== null) {
+        this.props.onImprovement(newRecord);
+      }
     })
 
     startAnimating(fps) {

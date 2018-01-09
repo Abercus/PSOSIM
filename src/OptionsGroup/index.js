@@ -11,7 +11,7 @@ const OptionsGroup = ({ title, onReset, children, ...props}) => (
             <h2>{title}</h2>
             <Button className='reset-button' raised onClick={onReset}>Reset</Button>
         </div>
-        <div>
+        <div className="options-content">
             {children}
         </div>
     </div>

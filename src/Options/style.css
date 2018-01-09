@@ -28,3 +28,8 @@
     flex: 1;
     flex-direction: column;
 }
+
+.simulate-btn {
+  margin-top: 20px;
+  flex: 1;
+}
