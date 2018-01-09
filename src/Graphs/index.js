@@ -19,10 +19,10 @@ const Graphs = ({ histories, onClear }) => {
       </div>
       <ScatterChart width={400} height={200}>
         {histories.map(({ values, index }) => (
-          <Scatter key={index} data={values.map(({ time, value }) => ({ x: time, y: value }))} line fill={`#${colors[index % 10]}`} />
+          <Scatter key={index} data={values.map(({ time, value }) => ({ x: time / 1000, y: value }))} line fill={`#${colors[index % 10]}`} />
         ))}
-        <YAxis dataKey="y" name="value" type="number" />
-        <XAxis dataKey="x" type="number" hide />
+        <YAxis dataKey="y" name="Value" type="number" />
+        <XAxis dataKey="x" name="Time" type="number" hide unit=" seconds" />
         <ZAxis range={[100]}/>
         <Tooltip />
       </ScatterChart>

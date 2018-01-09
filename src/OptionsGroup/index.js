@@ -8,7 +8,7 @@ import './style.css';
 const OptionsGroup = ({ title, onReset, children, ...props}) => (
     <div {...props} className="options-group">
         <div className='options-header'>
-            <h2>{title}</h2>
+            <h3>{title}</h3>
             <Button className='reset-button' raised onClick={onReset}>Reset</Button>
         </div>
         <div className="options-content">

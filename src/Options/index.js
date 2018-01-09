@@ -11,7 +11,6 @@ import OptionsGroup from '../OptionsGroup';
 import Slider from '../Slider';
 
 import './style.css';
-import 'rc-slider/assets/index.css';
 
 const unwrap = (handler, type=String) => (event) => handler(type(event.target.value));
 
