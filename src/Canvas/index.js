@@ -10,42 +10,84 @@ import './style.css'
 const OrbitControls = OrbitControlsFactory(THREE);
 
 
+
+
+function getOptimizationParams(name) {
+  if (name == "matyas") {
+    return {xMin:-5, xMax:5,
+      yMin:-5, yMax:5,
+      speed:0.0001, cameraHeight:20,
+      particleSize: 0.2};
+  }
+  if (name == "himmelblau") {
+    return {xMin:-5, xMax:5,
+      yMin:-5, yMax:5,
+      speed:0.0001, cameraHeight:20,
+      particleSize: 0.2};
+  }
+  else if (name == "ackley") {
+      return {xMin:-5, xMax:5,
+        yMin:-5, yMax:5,
+        speed:0.01, cameraHeight:10,
+        particleSize: 0.07};
+  } else if (name == "eggholder") {
+    return {xMin:-512, xMax:512,
+      yMin:-512, yMax:512,
+      speed:10, cameraHeight:750,
+      particleSize: 10};
+  }
+
+  return {xMin:-512, xMax:512,
+    yMin:-512, yMax:512,
+    speed:10, cameraHeight:750,
+    particleSize: 10};
+
+
+
+}
+
 function getOptimizationFunction(name) {
+    if (name == "matyas") {
+      // Matyas
+      return function(x, y) {
+        return 0.26*(x^2+y^2) - 0.48*x*y;
+      }
+    }
+    if (name === 'sphere') {
+      // Sphere
+      return function(x, y) {
+        return (0.005 * Math.pow(x, 2) + 0.005 * Math.pow(y, 2));
+      }
+    }
+    if (name === 'eggholder') {
+      // Eggholder
+      return function(x, y) {
+        return (-1)*(y+47)*Math.sin(Math.sqrt(Math.abs(x/2 + (y+47))))-x*Math.sin(
+              Math.sqrt(Math.abs(x-(y+47))));
+        }
+    }
+    if (name === 'ackley') {
+      // Ackley
+        return function(x, y) {
+          return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI)))) + 20;
+        }
+    }
+
+    if (name === "himmelblau") {
+      // TODO, put actualy demo here.
+        return function(x, y) {
+          return Math.pow((x*x+y-11),2) + Math.pow((x+y*y-7),2);
+        }
+    }
+    if (name === "demo") {
+      // TODO, put actualy demo here.
+      return function(x, y) {
+        return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI))));
+      }
+
+    }
 
 
-  // Eggholder
-  return function(x, y) {
-    return (-1)*(y+47)*Math.sin(Math.sqrt(Math.abs(x/2 + (y+47))))-x*Math.sin(
-      Math.sqrt(Math.abs(x-(y+47))));
-  }
-
-  // Sphere
-  return function(x, y) {
-    return (0.005 * Math.pow(x, 2) + 0.005 * Math.pow(y, 2));
-  }
-
-
-  // Ackley
-  return function(x, y) {
-    return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI))));
-  }
-
-  // Matyas
-  return function(x, y) {
-    return 0.26*(x^2+y^2) - 0.48*x*y;
-  }
-
-  // Himmelblau
-  return function(x, y) {
-    return (x^2+y-11)^2 + (x+y^2-7)^2;
-  }
-
-  if (name == "Himmelblau") {
-    return Parser.parse('(x^2 + y - 11 )^2 + (x+y^2-7)^2').toJSFunction(["x", "y"]);
-  }
-  if (name === 'sphere') {
-    return Parser.parse('(0.005 * x^2 + 0.005 * y^2)').toJSFunction( ['x','y'] );
-  }
   throw Error();
 }
 
@@ -93,6 +135,11 @@ function testOptimizationFunction(p, opt_vector) {
   return euclidDistance(p, opt_vector);
 }
 
+function generateRandom(min, max) {
+  return min + Math.random()*(max+1 - min)
+}
+
+
 function throttle(callback, wait=0, context = this) {
   let timeout = null
   let callbackArgs = null
@@ -118,7 +165,7 @@ function throttle(callback, wait=0, context = this) {
 
 // Class for whole population
 class Population {
-  constructor(pop, optimizeByFunction, xMin, xMax, yMin, yMax) {
+  constructor(pop, optimizeByFunction, topology, xMin, xMax, yMin, yMax) {
     this.population = pop;
     this.gBest = null;
     this.gBestNumerical = null;
@@ -127,6 +174,15 @@ class Population {
     this.xMax = xMax;
     this.yMin = yMin;
     this.yMax = yMax;
+    if (topology === "global") {
+      this.updateFn = this.updateGlobal;
+    } else if (topology === "random") {
+      this.updateFn = this.updateRandomAdaptive;
+    } else if (topology === "ring") {
+      this.updateFn = this.updateRing;
+    } else {
+      this.updateFn = this.updateGlobal;
+    }
   }
 
   set_optimization_goal(vector) {
@@ -158,7 +214,7 @@ class Population {
 
   updateParticle(particle) {
     // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
-    var LIMIT = 500;
+    var LIMIT = 20;
     //LIMIT = 1;
     // Limit should depend on the task...
     if (particle.velocity.x < -LIMIT) {
@@ -230,7 +286,7 @@ class Population {
 
   }
 
-  update(omega, phiP, phiG) {
+  updateGlobal(omega, phiP, phiG) {
     for (let particle of this.population) {
       if (this.optimizeByFunction) {
         var rand1 = Math.random();
@@ -361,19 +417,13 @@ export default class Canvas extends Component {
     constructor() {
       super();
       this.segments = 200;
-      this.xMin = -512;
-      this.xMax = 512;
-      this.yMin = -512;
-      this.yMax = 512;
-      this.xRange = this.xMax - this.xMin;
-      this.yRange = this.yMax - this.yMin;
     }
 
 
     updateParticles = throttle(() => {
-//      this.pop.update(this.props.omega, this.props.phiP, this.props.phiG);
-      this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
-//      this.pop.updateRing(this.props.omega, this.props.phiP, this.props.phiG);
+      this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG);
+      //this.pop.updateRandomAdaptive(this.props.omega, this.props.phiP, this.props.phiG);
+      //this.pop.updateRing(this.props.omega, this.props.phiP, this.props.phiG);
       this.particleSystem.geometry.verticesNeedUpdate = true;
     })
 
@@ -449,21 +499,47 @@ export default class Canvas extends Component {
 
     resetSimulation() {
         const optimizationFunction = getOptimizationFunction(this.props.optimizationFunction);
+        this.params = getOptimizationParams(this.props.optimizationFunction);
 
-        // MOve this
+
+        if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction) {
+            // MOve this
+            console.log(this.previousOptFunct, optimizationFunction)
+            this.xMin = this.params.xMin;
+            this.xMax = this.params.xMax;
+            this.yMin = this.params.yMin;
+            this.yMax = this.params.yMax;
+            this.xRange = this.xMax - this.xMin;
+            this.yRange = this.yMax - this.yMin;
+            this.particleSize = this.params.particleSize;
+            this.createGraph();
+
+            this.scene.remove(this.sphere);
+
+            var geometry = new THREE.SphereGeometry( this.particleSize * 0.7, 32, 32 );
+            var material = new THREE.MeshBasicMaterial( {color: 0xffff00,
+              transparent:true, opacity:0.5 } );
+            this.sphere = new THREE.Mesh( geometry, material );
+            this.scene.add(this.sphere);
+            this.camera.position.set(0, 0, this.params.cameraHeight);
+
+
+        }
+        this.previousOptFunct = this.props.optimizationFunction;
+
         this.scene.remove(this.particleSystem);
         this.particles =  new THREE.Geometry();
 
         this.pMaterial = new THREE.PointsMaterial({
-          size: 10,
+          size: this.params.particleSize*1.5,
           map: this.createCircleTexture('#ff0000', 256),
           transparent: true,
           depthWrite: false
         })
 
         for (var p = 0; p < this.props.particlesNumber; p++) {
-          var pX = Math.random() * 1024 - 512,
-            pY = Math.random() * 1024 - 512;
+          var pX = generateRandom(this.params.xMin, this.params.xMax),
+            pY = generateRandom(this.params.yMin, this.params.yMax);
             if (this.CLICKABLE_DEMO) {
               var pZ = Math.random() * 800 - 400;
             } else {
@@ -473,7 +549,10 @@ export default class Canvas extends Component {
             var particle = new THREE.Vector3(pX, pY, pZ);
             //particle.velocity = new THREE.Vector3((Math.random()*1024-512 - pX)/2, (Math.random()*1024-512 - pY)/2, 0);
             // TODO: velocity initialization
-            particle.velocity = new THREE.Vector3(Math.random()*20-10, Math.random()*20-10, 0);
+            particle.velocity = new THREE.Vector3(
+              generateRandom(-this.params.speed/2, this.params.speed/2),
+              generateRandom(-this.params.speed/2, this.params.speed/2),
+              Math.random()*20-10, 0);
 
             if (this.CLICKABLE_DEMO) {
               particle.bestNumerical = testOptimizationFunction(particle,
@@ -493,11 +572,11 @@ export default class Canvas extends Component {
         this.particleSystem.sortParticles = true;
         const bounds = [this.xMin, this.xMax, this.yMin, this.yMax];
         if (this.CLICKABLE_DEMO) {
-          this.pop = new Population(this.particles.vertices, false, ...bounds);
+          this.pop = new Population(this.particles.vertices, false, this.props.topology, ...bounds);
           this.pop.set_optimization_goal(this.sphere.position);
 
         } else {
-          this.pop = new Population(this.particles.vertices, true, ...bounds);
+          this.pop = new Population(this.particles.vertices, true, this.props.topology, ...bounds);
           this.pop.set_optimization_function(optimizationFunction);
         }
 
@@ -527,9 +606,9 @@ export default class Canvas extends Component {
         this.renderer.setClearColor( 0xbebebe, 1 );
 
         // Don't draw graph if not clickable demo.
-        if (!this.CLICKABLE_DEMO) {
-          this.createGraph();
-        }
+        //if (!this.CLICKABLE_DEMO) {
+        //  this.createGraph();
+        //}
     }
 
     setupLandscapeColors(graphGeometry) {
@@ -616,9 +695,6 @@ export default class Canvas extends Component {
         this.camera = new THREE.PerspectiveCamera(
           75, this.root.offsetWidth/this.root.offsetHeight, 0.1, 100000 );
 
-        // ?
-        //this.camera.near = 0.001;
-        //this.camera.far = 100000;
         this.camera.up.set(0,0,1);
         this.renderer = new THREE.WebGLRenderer({logarithmicDepthBuffer: true, antialias:true});
         this.renderer.setSize(this.root.offsetWidth, this.root.offsetHeight);
@@ -626,8 +702,8 @@ export default class Canvas extends Component {
 
         // We won't need those otherwise.
         if (this.CLICKABLE_DEMO) {
-          this.ballGeom = new THREE.SphereGeometry( 8, 32, 32 );
-          this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+          this.ballGeom = new THREE.SphereGeometry( 10 , 32, 32 );
+          this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, transparent: true, opacity:0.6} );
           this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
           this.scene.add(this.sphere);
           this.mouse = { x: 0, y: 0, z: 0 };
@@ -643,11 +719,11 @@ export default class Canvas extends Component {
           this.camera.position.set(0, 0, 500);
         } else {
           // Set camera depending on task
-          this.camera.position.set(0, 0, 750);
+          this.camera.position.set(0, 0, 700);
         }
 
-        this.setupVisualization();
         this.resetSimulation();
+        this.setupVisualization();
 
 
         // Those either.
