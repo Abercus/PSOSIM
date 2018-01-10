@@ -432,13 +432,13 @@ export default class Canvas extends Component {
 
 
       this.particleSystem.geometry.verticesNeedUpdate = true;
-      /*if (this.pop.gBestNumerical < prevBest) {
+      if (this.pop.gBestNumerical < prevBest) {
         this.props.onImprovement({
           time: new Date().getTime() - this.pop.referenceTime,
           value: this.pop.gBestNumerical,
         });
 
-      }*/
+      }
     })
 
     startAnimating(fps) {
