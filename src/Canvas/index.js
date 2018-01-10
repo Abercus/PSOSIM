@@ -200,7 +200,7 @@ export default class Canvas extends Component {
               particle.bestNumerical = testOptimizationFunction(particle,
                 this.sphere.position);
             } else {
-              particle.bestNumerical = pZ;
+              particle.bestNumerical = this.props.optimizationFunction(pX, pY);
             }
             particle.pBest = new THREE.Vector3(pX, pY, pZ);
 
@@ -225,7 +225,6 @@ export default class Canvas extends Component {
         }
         this.particleSystem.geometry.verticesNeedUpdate = true;
         this.scene.add(this.particleSystem);
-        console.log(this.pop);
     }
 
     setupVisualization() {

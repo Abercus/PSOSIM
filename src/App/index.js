@@ -125,7 +125,7 @@ class App extends Component {
               ref={canvas => { this.canvas = canvas; }}
               {...this.state}
               optimizationFunction={getOptimizationFunction(this.state.optimizationFunction)}
-              optimizationParams={getOptimizationParams(this.state.optimizationParams)}
+              optimizationParams={getOptimizationParams(this.state.optimizationFunction)}
               onImprovement={this.appendHistory}
             />
           </main>
