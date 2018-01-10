@@ -147,7 +147,6 @@ export default class Canvas extends Component {
           this.interval = undefined;
         }
 
-
         if (this.props.optimizationParams.demoMode) {
           this.CLICKABLE_DEMO = true;
           console.log("Demo mode turned on");
@@ -155,7 +154,6 @@ export default class Canvas extends Component {
           this.CLICKABLE_DEMO = false;
           console.log("Demo mode turned off");
         }
-
 
 
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction.toString()) {
@@ -190,8 +188,9 @@ export default class Canvas extends Component {
         this.particles = new THREE.Geometry();
 
         this.pMaterial = new THREE.PointsMaterial({
-          size: particleSize*1.5,
-          map: this.createCircleTexture('#ffffff', 256),
+          size: particleSize,
+          map: this.CLICKABLE_DEMO ? this.createCircleTexture('#ffffff', 256) :
+            this.createCircleTexture('#e60000', 256),
           transparent: true,
           depthWrite: false
         })
@@ -350,7 +349,7 @@ export default class Canvas extends Component {
         vertexColors: THREE.VertexColors,
         side:THREE.DoubleSide,
         transparent:true,
-        opacity: 0.5
+        opacity: 0.5,
       });
       //const vertexColorMaterial  = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 

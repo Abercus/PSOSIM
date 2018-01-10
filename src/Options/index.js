@@ -91,12 +91,14 @@ export default class Options extends Component {
                   >
                       <MenuItem value='ackley'>Ackley</MenuItem>
                       <MenuItem value='booth'>Booth</MenuItem>
+                      <MenuItem value='cross'>Cross-in-tray</MenuItem>
                       <MenuItem value='matyas'>Matyas</MenuItem>
                       <MenuItem value='eggholder'>Eggholder</MenuItem>
                       <MenuItem value='himmelblau'>Himmelblau</MenuItem>
                       <MenuItem value='holder'>Hölders Table</MenuItem>
                       <MenuItem value='rastrigin'>Rastrigin</MenuItem>
                       <MenuItem value='sphere'>Sphere</MenuItem>
+                      <MenuItem value='styblinski'>Styblinski-Tang</MenuItem>
                       <MenuItem value='demo'>Demo</MenuItem>
                   </Select>
               </FormControl>

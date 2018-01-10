@@ -1,10 +1,23 @@
 export function getOptimizationParams(name) {
 
+  if (name === "cross") {
+      return {xMin:-10, xMax:10,
+        yMin:-10, yMax:10,
+        speed:1, cameraHeight:20,
+        particleSize: 0.35};
+  }
+  if (name === "styblinski") {
+      return {xMin:-5, xMax:5,
+        yMin:-5, yMax:5,
+        speed:0.3, cameraHeight:20,
+        particleSize: 0.25};
+  }
+
   if (name === "matyas") {
     return {xMin:-5, xMax:5,
       yMin:-5, yMax:5,
       speed:0.1, cameraHeight:20,
-      particleSize: 0.2};
+      particleSize: 0.25};
   }
   if (name === "himmelblau") {
     return {xMin:-5, xMax:5,
@@ -22,7 +35,7 @@ export function getOptimizationParams(name) {
       return {xMin:-5.12, xMax:5.12,
         yMin:-5.12, yMax:5.12,
         speed:0.5, cameraHeight:20,
-        particleSize: 0.3};
+        particleSize: 0.2};
   }
   if (name === "holder") {
       return {xMin:-10, xMax:10,
@@ -34,13 +47,13 @@ export function getOptimizationParams(name) {
       return {xMin:-10, xMax:10,
         yMin:-10, yMax:10,
         speed:0.3, cameraHeight:70,
-        particleSize: 0.4};
+        particleSize: 0.8};
   }
   if (name === "eggholder") {
     return {xMin:-512, xMax:512,
       yMin:-512, yMax:512,
       speed:5, cameraHeight:750,
-      particleSize: 10};
+      particleSize: 12};
   }
   if (name === "sphere") {
     return {xMin:-800, xMax:800,
@@ -52,7 +65,7 @@ export function getOptimizationParams(name) {
     return {xMin:-1000, xMax:1000,
       yMin:-1000, yMax:1000,
       speed:10, cameraHeight:2000,
-      particleSize: 25, demoMode: true};
+      particleSize: 40, demoMode: true};
   }
   return {xMin:-512, xMax:512,
     yMin:-512, yMax:512,
@@ -61,6 +74,24 @@ export function getOptimizationParams(name) {
 }
 
 export function getOptimizationFunction(name) {
+    if (name === "cross") {
+      // Cross-in-tray
+      return function(x,y) {
+        return -0.0001 * Math.pow((
+          Math.abs(
+            Math.sin(x)*Math.sin(y)*Math.exp(
+              Math.abs(100-(Math.sqrt(x*x+y*y)/Math.PI))
+                +1))),
+                0.1);
+      }
+    }
+
+    if (name === 'styblinski') {
+      // Styblinski-Tang
+      return function(x, y) {
+        return (Math.pow(x, 4)- 16*Math.pow(x,2) + 5*x + Math.pow(y, 4)- 16*Math.pow(y,2) + 5*y )/2;
+        }
+    }
     if (name === "matyas") {
       // Matyas
       return function(x, y) {
