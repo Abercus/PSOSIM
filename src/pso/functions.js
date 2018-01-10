@@ -9,19 +9,19 @@ export function getOptimizationParams(name) {
   if (name === "himmelblau") {
     return {xMin:-5, xMax:5,
       yMin:-5, yMax:5,
-      speed:1, cameraHeight:100,
-      particleSize: 0.2};
+      speed:0.3, cameraHeight:50,
+      particleSize: 0.3};
   }
   if (name === "ackley") {
       return {xMin:-5, xMax:5,
         yMin:-5, yMax:5,
         speed:0.1, cameraHeight:13,
-        particleSize: 0.1};
+        particleSize: 0.2};
   }
   if (name === "rastrigin") {
       return {xMin:-5.12, xMax:5.12,
         yMin:-5.12, yMax:5.12,
-        speed:1, cameraHeight:20,
+        speed:0.5, cameraHeight:20,
         particleSize: 0.3};
   }
   if (name === "holder") {
@@ -33,8 +33,8 @@ export function getOptimizationParams(name) {
   if (name === "booth") {
       return {xMin:-10, xMax:10,
         yMin:-10, yMax:10,
-        speed:1, cameraHeight:70,
-        particleSize: 0.3};
+        speed:0.3, cameraHeight:70,
+        particleSize: 0.4};
   }
   if (name === "eggholder") {
     return {xMin:-512, xMax:512,
