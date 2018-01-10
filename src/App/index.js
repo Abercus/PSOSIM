@@ -3,6 +3,7 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
+import IconButton from 'material-ui/IconButton';
 
 import './style.css';
 
@@ -12,6 +13,7 @@ import Options from '../Options';
 import CreditsDialog from '../CreditsDialog';
 import ParametersDialog from '../ParametersDialog';
 import AlgorithmDialog from '../AlgorithmDialog';
+import GitHub from '../GitHub';
 import { getOptimizationParams, getOptimizationFunction } from '../pso/functions';
 
 
@@ -108,6 +110,9 @@ class App extends Component {
             </Typography>
             <Button color="contrast" onClick={this.handleOpenCredits}>Credits</Button>
             <Button color="contrast" onClick={this.handleOpenAlgorithm}>Algorithm</Button>
+            <IconButton href="https://github.com/Abercus/PSOSIM" aria-labelledby="demo-github" color="contrast">
+              <GitHub />
+            </IconButton>
           </Toolbar>
         </AppBar>
         <div className="App-container">
