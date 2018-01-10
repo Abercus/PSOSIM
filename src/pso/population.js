@@ -24,7 +24,7 @@ export default class Population {
     this.xMax = xMax;
     this.yMin = yMin;
     this.yMax = yMax;
-    this.referenceTime = new Date().getTime();
+    this.epoch = 0;
     if (topology === "global") {
       this.updateFn = this.updateGlobal;
     } else if (topology === "random") {
@@ -155,6 +155,7 @@ export default class Population {
 
       this.updateParticle(particle, speed);
     }
+    this.epoch++;
   }
 
   updateRing(omega, phiP, phiG, speed) {
@@ -184,6 +185,7 @@ export default class Population {
       }
       this.updateParticle(particle, speed);
     }
+    this.epoch++;
   }
 
     updateRandomAdaptive(omega, phiP, phiG, speed) {
@@ -234,6 +236,7 @@ export default class Population {
 
           this.updateParticle(particle, speed);
         }
+        this.epoch++;
     }
 
   findPopulationBest() {

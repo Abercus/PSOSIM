@@ -1,6 +1,6 @@
 import React from 'react';
 import Paper from 'material-ui/Paper';
-import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Label, Text } from 'recharts';
 import palette from 'google-palette';
 import Button from 'material-ui/Button';
 
@@ -19,10 +19,14 @@ const Graphs = ({ histories, onClear }) => {
       </div>
       <ScatterChart width={400} height={200}>
         {histories.map(({ values, index }) => (
-          <Scatter key={index} data={values.map(({ time, value }) => ({ x: time / 1000, y: value }))} line fill={`#${colors[index % 10]}`} />
+          <Scatter key={index} data={values.map(({ epoch, value }) => ({ x: epoch, y: value }))} line fill={`#${colors[index % 10]}`} />
         ))}
-        <YAxis dataKey="y" name="Value" type="number" />
-        <XAxis dataKey="x" name="Time" type="number" hide unit=" seconds" />
+        <YAxis dataKey="y" name="Value" type="number" tickFormatter={Math.round}>
+          <Label className="axis-label" angle={-90} value='Found optimum' position='insideLeft' style={{textAnchor: 'middle'}} />
+        </YAxis>
+        <XAxis dataKey="x" name="Epoch" type="number">
+          <Label position="insideBottom" value="Epoch" className="axis-label" offset={-3}></Label>
+        </XAxis>
         <ZAxis range={[100]}/>
         <Tooltip />
       </ScatterChart>

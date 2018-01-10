@@ -42,10 +42,10 @@ export default class Canvas extends Component {
     constructor() {
       super();
       this.segments = 200;
+      this.prevBest = null;
     }
 
     updateParticles = throttle(() => {
-      const prevBest = this.pop.gBestNumerical;
       this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG, this.props.speed);
 
       this.sphere.position.x = this.pop.gBest.x;
@@ -56,17 +56,18 @@ export default class Canvas extends Component {
       for (var i = 0; i < this.particles.vertices.length; i++) {
         this.particles.vertices[i].z *= this.zScale();
       }
+      this.checkImproved();
+    })
 
-
-      this.particleSystem.geometry.verticesNeedUpdate = true;
-      if (this.pop.gBestNumerical < prevBest) {
+    checkImproved = throttle(() => {
+      if (this.prevBest === null || this.pop.gBestNumerical < this.prevBest) {
         this.props.onImprovement({
-          time: new Date().getTime() - this.pop.referenceTime,
+          epoch: this.pop.epoch,
           value: this.pop.gBestNumerical,
         });
-
       }
-    })
+      this.prevBest = this.pop.gBestNumerical;
+    }, 1000)
 
     startAnimating(fps) {
         this.fpsInterval = 1000 / fps;
@@ -160,6 +161,7 @@ export default class Canvas extends Component {
 
         }
         this.previousOptFunct = this.props.optimizationFunction;
+        this.prevBest = null;
 
         this.scene.remove(this.particleSystem);
         if (this.particles) {
