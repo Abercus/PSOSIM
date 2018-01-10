@@ -37,8 +37,7 @@ export function subtract_2(v1,v2,c,rand1) {
 
 export function euclidDistance(p1, p2) {
   return Math.sqrt(Math.pow(p1.x - p2.x, 2)
-    + Math.pow(p1.y - p2.y, 2)
-    + Math.pow(p1.z - p2.z, 2));
+    + Math.pow(p1.y - p2.y, 2));
 }
 
 export function testOptimizationFunction(p, opt_vector) {

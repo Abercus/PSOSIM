@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import {
-  testOptimizationFunction,
+  euclidDistance,
   addition,
   addition_w,
   addition_2,
@@ -19,7 +19,8 @@ export default class Population {
     this.gBest = null;
     this.gBestNumerical = null;
     this.speed = speed;
-    this.optimizeByFunction = optimizeByFunction;
+    this.demo = !optimizeByFunction;
+    this.reflection = this.demo ? 1:0.5;
     this.xMin = xMin;
     this.xMax = xMax;
     this.yMin = yMin;
@@ -38,15 +39,12 @@ export default class Population {
 
   set_optimization_goal(vector) {
     this.optimization_goal = vector;
-    // When new goal then nullify bests
-    this.gBest = null;
-    this.gBestNumerical = null;
-    for (var i=0; i<this.population.length; i++) {
-      this.population[i].bestNumerical = testOptimizationFunction(this.population[i], vector);
-      this.population[i].pBest = new THREE.Vector3(this.population[i].x, this.population[i].y, this.population[i].bestNumerical);
-
+    var func = function (x,y) {
+      return euclidDistance({x:x, y:y}, vector);
     }
-    this.findPopulationBest();
+    // Reset best numerical
+
+    this.set_optimization_function(func);
 
   }
 
@@ -80,48 +78,40 @@ export default class Population {
     if (particle.velocity.y > LIMIT) {
       particle.velocity.y = LIMIT;
     }
-    if (!this.optimizeByFunction) {
-      if (particle.velocity.z < -LIMIT) {
-        particle.velocity.z = -LIMIT;
-      }
-      if (particle.velocity.z > LIMIT) {
-        particle.velocity.z = LIMIT;
-      }
-    }
 
     // If bounded search area.
     var newLocation = addition(particle, particle.velocity);
     if (newLocation.x > this.xMax) {
       if (particle.velocity.x > 0) {
-        particle.velocity.x *= -0.5;
+        particle.velocity.x *= -this.reflection;
       }
       newLocation.x = this.xMax;
     } else if (newLocation.x < this.xMin) {
         if (particle.velocity.x < 0) {
-          particle.velocity.x *= -0.5;
+          particle.velocity.x *= -this.reflection;
         }
       newLocation.x = this.xMin;
     }
     if (newLocation.y > this.yMax) {
       if (particle.velocity.y > 0) {
-        particle.velocity.y *= -0.5;
+        particle.velocity.y *= -this.reflection;
       }
         newLocation.y = this.yMax;
     } else if (newLocation.y < this.yMin) {
       if (particle.velocity.y < 0) {
-        particle.velocity.y *= -0.5;
+        particle.velocity.y *= -this.reflection;
       }
         newLocation.y = this.yMin;
     }
 
     particle.x = newLocation.x;
     particle.y = newLocation.y;
-    particle.z = newLocation.z;
 
-    if (!this.optimizeByFunction) {
-      particle.currentNumerical = testOptimizationFunction(particle, this.optimization_goal);
+    particle.currentNumerical = this.optimization_function(particle.x, particle.y);
+
+    if (this.demo) {
+      particle.z = 0;
     } else {
-      particle.currentNumerical = this.optimization_function(particle.x, particle.y);
       particle.z = particle.currentNumerical;
 
     }
@@ -138,23 +128,17 @@ export default class Population {
 
   updateGlobal(omega, phiP, phiG, speed) {
     for (let particle of this.population) {
-      if (this.optimizeByFunction) {
-        var rand1 = Math.random();
-        var rand2 = Math.random();
-        particle.velocity = addition_2_w(
-          omega,
-          particle.velocity,
-          addition_2(
-            subtract_2(particle.pBest, particle, phiP, rand1),
-            subtract_2(this.gBest, particle, phiG, rand2)
-          )
-        );
-      } else {
-        particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
-      }
+      var rand1 = Math.random();
+      var rand2 = Math.random();
+      particle.velocity = addition_2_w(
+        omega,
+        particle.velocity,
+        addition_2(
+          subtract_2(particle.pBest, particle, phiP, rand1),
+          subtract_2(this.gBest, particle, phiG, rand2)
+        ));
 
     }
-
     for (let particle of this.population) {
         this.updateParticle(particle, speed);
     }
@@ -181,11 +165,8 @@ export default class Population {
         pB = right_neighbour.pBest;
       }
 
-      if (this.optimizeByFunction) {
-          particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
-      } else {
-          particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
-      }
+      particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
+
     }
 
     for (let particle of this.population) {
@@ -234,11 +215,8 @@ export default class Population {
             }
           }
 
-          if (this.optimizeByFunction) {
-            particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pb, particle, phiG, rand2)));
-          } else {
-            particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
-          }
+          particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pb, particle, phiG, rand2)));
+
 
         }
 

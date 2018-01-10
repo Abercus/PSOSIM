@@ -48,7 +48,12 @@ export function getOptimizationParams(name) {
       speed:8, cameraHeight:2300,
       particleSize: 25};
   }
-
+  if (name === "demo") {
+    return {xMin:-1000, xMax:1000,
+      yMin:-1000, yMax:1000,
+      speed:10, cameraHeight:2000,
+      particleSize: 25, demoMode: true};
+  }
   return {xMin:-512, xMax:512,
     yMin:-512, yMax:512,
     speed:10, cameraHeight:750,
@@ -109,9 +114,8 @@ export function getOptimizationFunction(name) {
         }
     }
     if (name === "demo") {
-      // TODO, put actualy demo here.
-      return function(x, y) {
-        return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI))));
+      return function() {
+        return 0;
       }
 
     }
