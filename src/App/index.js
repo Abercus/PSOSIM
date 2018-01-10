@@ -42,6 +42,7 @@ class App extends Component {
       fitnesses: [{values: [], index: 0}],
       currentFitness: 0,
       openCredits: false,
+      needsRestart: false,
       ...this.simulationDefaults,
       ...this.visualizationDefaults
     };
@@ -55,6 +56,7 @@ class App extends Component {
       currentFitness: this.state.fitnesses.length,
       currentBest: null,
       speed: getOptimizationParams(this.state.optimizationFunction).speed,
+      needsRestart: false,
     });
   }
 
@@ -67,6 +69,7 @@ class App extends Component {
   }
 
   setValue = (field) => (value) => this.setState({ [field]: value })
+  setRestartValue = (field) => (value) => this.setState({ [field]: value, needsRestart: true })
 
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
@@ -104,13 +107,13 @@ class App extends Component {
           <Options
             className="App-aside"
             {...this.state}
-            onParticlesNumberChange={this.setValue('particlesNumber')}
-            onTopologyChange={this.setValue('topology')}
+            onParticlesNumberChange={this.setRestartValue('particlesNumber')}
+            onTopologyChange={this.setRestartValue('topology')}
             onOmegaChange={this.setValue('omega')}
             onPhiPChange={this.setValue('phiP')}
             onPhiGChange={this.setValue('phiG')}
             onSpeedChange={this.setValue('speed')}
-            onOptimizationFunctionChange={this.setValue('optimizationFunction')}
+            onOptimizationFunctionChange={this.setRestartValue('optimizationFunction')}
 
             onPlaybackSpeedChange={this.setValue('playbackSpeed')}
             onLandscapeOpacityChange={this.setValue('landscapeOpacity')}
@@ -120,6 +123,7 @@ class App extends Component {
             onResetVisualization={this.resetVisualization}
 
             onSimulate={this.startSimulation}
+            needsRestart={this.state.needsRestart}
           />
           <main className="App-main">
             <Canvas

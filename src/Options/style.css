@@ -31,5 +31,9 @@
 
 .simulate-btn {
   margin-top: 20px;
-  flex: 1;
+  width: 100%;
+}
+
+.simulate-btn-wrapper {
+  width: 100%;
 }
