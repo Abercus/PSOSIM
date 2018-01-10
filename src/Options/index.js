@@ -64,7 +64,13 @@ export default class Options extends Component {
           >
               <FormControl className='form-control'>
                   <InputLabel htmlFor='particles-number'>Number of particles</InputLabel>
-                  <Input type='number' value={particlesNumber} onChange={unwrap(onParticlesNumberChange, Number)} />
+                  <Input
+                    type='number'
+                    value={particlesNumber}
+                    onChange={unwrap((value) => parseInt(value) > 0 && onParticlesNumberChange(parseInt(value)), Number)}
+                    min={1}
+                    step={1}
+                  />
               </FormControl>
               <FormControl className='form-control'>
                   <InputLabel>Topology</InputLabel>
@@ -80,11 +86,11 @@ export default class Options extends Component {
               <div className='options-formula form-control'>
                   <FormControl className='omega'>
                       <InputLabel htmlFor='omega'>ω</InputLabel>
-                      <Input type='number' value={omega} onChange={unwrap(onOmegaChange, Number)}/>
+                      <Input type='number' value={omega} onChange={unwrap(onOmegaChange, Number)} />
                   </FormControl>
                   <FormControl className='phi_p'>
                       <InputLabel htmlFor='phi_p'>φ<sub>p</sub></InputLabel>
-                      <Input type='number' value={phiP} onChange={unwrap(onPhiPChange, Number)}/>
+                      <Input type='number' value={phiP} onChange={unwrap(onPhiPChange, Number)} />
                   </FormControl>
                   <FormControl className='phi_g'>
                       <InputLabel htmlFor='phi_g'>φ<sub>g</sub></InputLabel>
@@ -92,7 +98,12 @@ export default class Options extends Component {
                   </FormControl>
                   <FormControl className='speed'>
                       <InputLabel htmlFor='speed'>max v</InputLabel>
-                      <Input type='number' value={speed} onChange={unwrap(onSpeedChange, Number)} />
+                      <Input
+                        type='number'
+                        value={speed}
+                        onChange={unwrap((value) => value > 0 && onSpeedChange(value), Number)}
+                        min={0}
+                      />
                   </FormControl>
               </div>
               <FormControl className='form-control' style={{ minWidth: 210 }}>
