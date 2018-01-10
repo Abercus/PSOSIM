@@ -3,17 +3,15 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
-import Dialog, {
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
 
 import './style.css';
 
 import Canvas from '../Canvas';
 import Graphs from '../Graphs'
 import Options from '../Options';
+import CreditsDialog from '../CreditsDialog';
+import ParametersDialog from '../ParametersDialog';
+import AlgorithmDialog from '../AlgorithmDialog';
 import { getOptimizationParams, getOptimizationFunction } from '../pso/functions';
 
 
@@ -42,6 +40,8 @@ class App extends Component {
       fitnesses: [{values: [], index: 0}],
       currentFitness: 0,
       openCredits: false,
+      openParametersDescription: false,
+      openAlgorithm: false,
       needsRestart: false,
       ...this.simulationDefaults,
       ...this.visualizationDefaults
@@ -61,7 +61,7 @@ class App extends Component {
   }
 
   resetSimulation = () => {
-    this.setState(this.simulationDefaults);
+    this.setState({ ...this.simulationDefaults, needsRestart: true });
   }
 
   resetVisualization = () => {
@@ -73,6 +73,12 @@ class App extends Component {
 
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
+
+  handleOpenParametersDescription = () => this.setState({ openParametersDescription: true })
+  handleCloseParametersDescription = () => this.setState({ openParametersDescription: false })
+
+  handleOpenAlgorithm = () => this.setState({ openAlgorithm: true })
+  handleCloseAlgorithm = () => this.setState({ openAlgorithm: false })
 
   appendHistory = (value) => {
     const { fitnesses, currentFitness } = this.state;
@@ -101,6 +107,7 @@ class App extends Component {
               Particle swarm optimization
             </Typography>
             <Button color="contrast" onClick={this.handleOpenCredits}>Credits</Button>
+            <Button color="contrast" onClick={this.handleOpenAlgorithm}>Algorithm</Button>
           </Toolbar>
         </AppBar>
         <div className="App-container">
@@ -124,6 +131,8 @@ class App extends Component {
 
             onSimulate={this.startSimulation}
             needsRestart={this.state.needsRestart}
+
+            onOpenParametersDescription={this.handleOpenParametersDescription}
           />
           <main className="App-main">
             <Canvas
@@ -136,20 +145,16 @@ class App extends Component {
           </main>
           <Graphs histories={this.state.fitnesses} onClear={this.clearHistory} currentBest={this.state.currentBest} />
         </div>
-        <Dialog
-          open={this.state.openCredits}
-          onClose={this.handleCloseCredits}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">Credits</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a>&nbsp;
-              from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by&nbsp;
-              <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
-            </DialogContentText>
-          </DialogContent>
-        </Dialog>
+        <CreditsDialog open={this.state.openCredits} onClose={this.handleCloseCredits} />
+        <ParametersDialog
+          open={this.state.openParametersDescription}
+          onClose={this.handleCloseParametersDescription}
+          onOpenAlgorithm={() => {
+            this.handleCloseParametersDescription();
+            this.handleOpenAlgorithm();
+          }}
+        />
+        <AlgorithmDialog open={this.state.openAlgorithm} onClose={this.handleCloseAlgorithm} />
       </div>
     );
   }
