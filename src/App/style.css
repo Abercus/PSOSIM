@@ -31,21 +31,3 @@
 
 .App-aside {
 }
-
-.credits-imgs {
-  display: flex;
-  justify-content: space-around;
-  margin: 20px 0 30px;
-}
-
-.credits-imgs > img {
-  height: 150px;
-}
-
-.credits-imgs > img:not(:last-child) {
-  margin-right: 20px;
-}
-
-.credits-icons {
-  font-size: 14px;
-}

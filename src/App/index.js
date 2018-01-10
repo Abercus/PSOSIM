@@ -3,18 +3,15 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
-import Dialog, {
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
 import './style.css';
 
 import Canvas from '../Canvas';
 import Graphs from '../Graphs'
 import Options from '../Options';
+import CreditsDialog from '../CreditsDialog';
+import ParametersDialog from '../ParametersDialog';
+import AlgorithmDialog from '../AlgorithmDialog';
 import { getOptimizationParams, getOptimizationFunction } from '../pso/functions';
 
 
@@ -44,6 +41,7 @@ class App extends Component {
       currentFitness: 0,
       openCredits: false,
       openParametersDescription: false,
+      openAlgorithm: false,
       needsRestart: false,
       ...this.simulationDefaults,
       ...this.visualizationDefaults
@@ -79,6 +77,9 @@ class App extends Component {
   handleOpenParametersDescription = () => this.setState({ openParametersDescription: true })
   handleCloseParametersDescription = () => this.setState({ openParametersDescription: false })
 
+  handleOpenAlgorithm = () => this.setState({ openAlgorithm: true })
+  handleCloseAlgorithm = () => this.setState({ openAlgorithm: false })
+
   appendHistory = (value) => {
     const { fitnesses, currentFitness } = this.state;
     fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([value]);
@@ -106,6 +107,7 @@ class App extends Component {
               Particle swarm optimization
             </Typography>
             <Button color="contrast" onClick={this.handleOpenCredits}>Credits</Button>
+            <Button color="contrast" onClick={this.handleOpenAlgorithm}>Algorithm</Button>
           </Toolbar>
         </AppBar>
         <div className="App-container">
@@ -143,74 +145,16 @@ class App extends Component {
           </main>
           <Graphs histories={this.state.fitnesses} onClear={this.clearHistory} currentBest={this.state.currentBest} />
         </div>
-        <Dialog
-          open={this.state.openCredits}
-          onClose={this.handleCloseCredits}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">Credits</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              <div className="credits-imgs">
-                <img src="images/ut_logo.png"></img>
-                <img src="images/study_it.jpg"></img>
-              </div>
-              <div className="credits-icons">
-                Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>, licensed by&nbsp;
-                <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
-              </div>
-            </DialogContentText>
-          </DialogContent>
-        </Dialog>
-        <Dialog
+        <CreditsDialog open={this.state.openCredits} onClose={this.handleCloseCredits} />
+        <ParametersDialog
           open={this.state.openParametersDescription}
           onClose={this.handleCloseParametersDescription}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">Parameters description</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Parameter</TableCell>
-                    <TableCell>Description</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Number of particles</TableCell>
-                    <TableCell>Size of the swarm</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Topology</TableCell>
-                    <TableCell>The topology of the swarm defines the subset of particles with which each particle can exchange information.</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>ω</TableCell>
-                    <TableCell>Previous velocity coefficient</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>φ<sub>p</sub></TableCell>
-                    <TableCell>Particle best coefficient</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>φ<sub>g</sub></TableCell>
-                    <TableCell>Global (or group's) best coefficient</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>max v.</TableCell>
-                    <TableCell>Maximum velocity of a particle, after which the value is cut.</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Optimization function</TableCell>
-                    <TableCell>One of the possible fitness landscapes for optimal value search</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </DialogContentText>
-          </DialogContent>
-        </Dialog>
+          onOpenAlgorithm={() => {
+            this.handleCloseParametersDescription();
+            this.handleOpenAlgorithm();
+          }}
+        />
+        <AlgorithmDialog open={this.state.openAlgorithm} onClose={this.handleCloseAlgorithm} />
       </div>
     );
   }

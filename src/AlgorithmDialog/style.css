@@ -1,0 +1,7 @@
+.algorithm-content {
+  text-align: center
+}
+
+.algorithm-content p, .algorithm-content ul {
+  text-align: left;
+}
