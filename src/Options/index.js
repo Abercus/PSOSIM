@@ -89,9 +89,12 @@ const Options = ({
                     autoWidth
                 >
                     <MenuItem value='ackley'>Ackley</MenuItem>
+                    <MenuItem value='booth'>Booth</MenuItem>
                     <MenuItem value='matyas'>Matyas</MenuItem>
                     <MenuItem value='eggholder'>Eggholder</MenuItem>
                     <MenuItem value='himmelblau'>Himmelblau</MenuItem>
+                    <MenuItem value='holder'>Hölders Table</MenuItem>
+                    <MenuItem value='rastrigin'>Rastrigin</MenuItem>
                     <MenuItem value='sphere'>Sphere</MenuItem>
                     <MenuItem value='demo'>Demo</MenuItem>
                 </Select>
