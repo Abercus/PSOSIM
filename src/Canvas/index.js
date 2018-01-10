@@ -138,7 +138,7 @@ export default class Canvas extends Component {
     resetSimulation() {
         const { xMin, xMax, yMin, yMax, speed, cameraHeight, particleSize } = this.props.optimizationParams;
 
-        if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction) {
+        if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction.toString()) {
 
             if (!this.CLICKABLE_DEMO) {
               this.createGraph();
@@ -160,7 +160,7 @@ export default class Canvas extends Component {
             this.camera.lookAt(new THREE.Vector3(0,0,0));
 
         }
-        this.previousOptFunct = this.props.optimizationFunction;
+        this.previousOptFunct = this.props.optimizationFunction.toString();
         this.prevBest = null;
 
         this.scene.remove(this.particleSystem);
