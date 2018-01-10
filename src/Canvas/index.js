@@ -48,14 +48,17 @@ export default class Canvas extends Component {
     updateParticles = throttle(() => {
       this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG, this.props.speed);
 
-      this.sphere.position.x = this.pop.gBest.x;
-      this.sphere.position.y = this.pop.gBest.y;
-      this.sphere.position.z = this.pop.gBest.z * this.zScale();
-
       this.particleSystem.geometry.verticesNeedUpdate = true;
-      for (var i = 0; i < this.particles.vertices.length; i++) {
-        this.particles.vertices[i].z *= this.zScale();
+      if (!this.CLICKABLE_DEMO) {
+        this.sphere.position.x = this.pop.gBest.x;
+        this.sphere.position.y = this.pop.gBest.y;
+        this.sphere.position.z = this.pop.gBest.z * this.zScale();
+
+        for (var i = 0; i < this.particles.vertices.length; i++) {
+          this.particles.vertices[i].z *= this.zScale();
+        }
       }
+
       this.checkImproved();
     })
 
@@ -138,11 +141,26 @@ export default class Canvas extends Component {
     resetSimulation() {
         const { xMin, xMax, yMin, yMax, speed, cameraHeight, particleSize } = this.props.optimizationParams;
 
+
+        if (this.interval) {
+          window.clearInterval(this.interval);
+          this.interval = undefined;
+        }
+
+
+        if (this.props.optimizationParams.demoMode) {
+          this.CLICKABLE_DEMO = true;
+          console.log("Demo mode turned on");
+        } else {
+          this.CLICKABLE_DEMO = false;
+          console.log("Demo mode turned off");
+        }
+
+
+
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction.toString()) {
 
-            if (!this.CLICKABLE_DEMO) {
-              this.createGraph();
-            }
+            this.createGraph();
 
             this.scene.remove(this.sphere);
             this.sphere.material.dispose();
@@ -183,7 +201,7 @@ export default class Canvas extends Component {
           var pX = generateRandom(xMin, xMax),
             pY = generateRandom(yMin, yMax);
             if (this.CLICKABLE_DEMO) {
-              pZ = Math.random() * 800 - 400;
+              pZ = 0;
             } else {
               pZ = this.props.optimizationFunction(pX, pY) * this.zScale();
             }
@@ -225,7 +243,31 @@ export default class Canvas extends Component {
         }
         this.particleSystem.geometry.verticesNeedUpdate = true;
         this.scene.add(this.particleSystem);
+
+                // Those either.
+        if (this.CLICKABLE_DEMO) {
+          this.initDemoMode();
+        }
     }
+
+
+    initDemoMode() {
+
+      // Add mousedown event
+    // Set random interval to pick new locations.. Move this stuff.
+      this.interval = setInterval(() => {
+          var x = Math.random() * 2000 - 1000;
+          var y = Math.random() * 2000 - 1000;
+          var z = 0
+          this.pop.set_optimization_goal({x:x,
+              y:y, z:z});
+          this.sphere.position.x = x;
+          this.sphere.position.y = y;
+          this.sphere.position.z = z;
+        },
+        15000);
+    }
+
 
     setupVisualization() {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -238,12 +280,12 @@ export default class Canvas extends Component {
         // wireframe for xy-plane
 
         var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088, wireframe: true, side:THREE.DoubleSide } );
-        var floorGeometry = new THREE.PlaneGeometry(1000,1000,10,10);
-        var floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
-        floor.position.z = -0.01;
+        var floorGeometry = new THREE.PlaneGeometry(2000,2000);
+        this.floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
+        this.floor.position.z = -0.01;
         // rotate to lie in x-y plane
         // floor.rotation.x = Math.PI / 2;
-        this.scene.add(floor);
+        this.scene.add(this.floor);
         // bgcolor
         this.renderer.setClearColor( 0xbebebe, 1 );
     }
@@ -333,6 +375,30 @@ export default class Canvas extends Component {
       this.scene.add(this.graphMesh);
     }
 
+
+    addMousedownEvent() {
+      this.renderer.domElement.addEventListener("mousedown", (event) => {
+          event.preventDefault();
+          if (this.CLICKABLE_DEMO) {
+            var viewport_size = this.renderer.getSize ();
+            var mouse = new THREE.Vector3();
+            mouse.x = ( event.offsetX / viewport_size.width) * 2 - 1;
+            mouse.y = - ( event.offsetY / viewport_size.height ) * 2 + 1;
+            mouse.z = 0;
+            mouse.unproject( this.camera );
+            var dir = mouse.sub( this.camera.position ).normalize();
+            var distance = - this.camera.position.z / dir.z;
+            var pos = this.camera.position.clone().add( dir.multiplyScalar( distance ) );
+            this.sphere.position.x = pos.x;
+            this.sphere.position.y = pos.y;
+            this.pop.set_optimization_goal({
+                x: this.sphere.position.x,
+                y: this.sphere.position.y,
+                z: 0 });
+          }
+        }, false);
+      }
+
     setupScene() {
         // Set true for clickable demo
         this.CLICKABLE_DEMO = false;
@@ -347,18 +413,14 @@ export default class Canvas extends Component {
         this.root.appendChild(this.renderer.domElement);
 
         // We won't need those otherwise.
-        if (this.CLICKABLE_DEMO) {
-          this.ballGeom = new THREE.SphereGeometry( 10 , 32, 32 );
-          this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, transparent: true, opacity:0.6} );
-          this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
-          this.scene.add(this.sphere);
-          this.mouse = { x: 0, y: 0, z: 0 };
-        } else {
-          this.ballGeom = new THREE.SphereGeometry( 5, 32, 32 );
-          this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-          this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
-          this.scene.add(this.sphere);
-        }
+
+        this.ballGeom = new THREE.SphereGeometry( 5, 32, 32 );
+        this.ballMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00, transparent:true, opacity:0.7} );
+        this.sphere = new THREE.Mesh( this.ballGeom, this.ballMaterial );
+        this.scene.add(this.sphere);
+
+        this.addMousedownEvent();
+
 
         /*
         if (this.CLICKABLE_DEMO) {
@@ -372,37 +434,6 @@ export default class Canvas extends Component {
         this.setupVisualization();
         this.resetSimulation();
 
-
-        // Those either.
-        if (this.CLICKABLE_DEMO) {
-
-          // Add mousedown event
-          this.renderer.domElement.addEventListener("mousedown", (event_info) => {
-            event_info.preventDefault();
-            this.mouse.x = ( event_info.clientX / window.innerWidth ) * 2 - 1;
-            this.mouse.y = - ( event_info.clientY / window.innerHeight ) * 2 + 1;
-            var x = this.mouse.x*this.root.offsetWidth;
-            var y = this.mouse.y*this.root.offsetHeight;
-            this.sphere.position.x = x;
-            this.sphere.position.y = y;
-            this.sphere.position.z = 0;
-            this.pop.set_optimization_goal({ x: x, y: y, z: this.mouse.z });
-
-          });
-
-        // Set random interval to pick new locations.. Move this stuff.
-          setInterval(() => {
-              var x = Math.random() * 500 - 250;
-              var y = Math.random() * 500 - 250;
-              var z = Math.random() * 500 - 250;
-              this.pop.set_optimization_goal({x:x,
-                  y:y, z:z});
-              this.sphere.position.x = x;
-              this.sphere.position.y = y;
-              this.sphere.position.z = z;
-            },
-            10000);
-        }
 
         this.startAnimating(40);
     }
