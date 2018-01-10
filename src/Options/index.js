@@ -8,6 +8,8 @@ import { MenuItem } from 'material-ui/Menu';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
 import Tooltip from 'material-ui/Tooltip';
+import IconButton from 'material-ui/IconButton';
+import InfoIcon from 'material-ui-icons/Info';
 
 import OptionsGroup from '../OptionsGroup';
 import Slider from '../Slider';
@@ -44,11 +46,22 @@ export default class Options extends Component {
       onResetVisualization,
       onSimulate,
       needsRestart,
+      onOpenParametersDescription,
     } = this.props;
 
     return (
       <Paper className='options'>
-          <OptionsGroup title="Simulation" onReset={onResetSimulation}>
+          <OptionsGroup
+            title="Simulation"
+            beforeBtn={
+              <Tooltip title="Parameters description">
+                <IconButton onClick={onOpenParametersDescription}>
+                  <InfoIcon />
+                </IconButton>
+              </Tooltip>
+            }
+            onReset={onResetSimulation}
+          >
               <FormControl className='form-control'>
                   <InputLabel htmlFor='particles-number'>Number of particles</InputLabel>
                   <Input type='number' value={particlesNumber} onChange={unwrap(onParticlesNumberChange, Number)} />

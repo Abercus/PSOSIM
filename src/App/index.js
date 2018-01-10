@@ -8,6 +8,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
 import './style.css';
 
@@ -42,6 +43,7 @@ class App extends Component {
       fitnesses: [{values: [], index: 0}],
       currentFitness: 0,
       openCredits: false,
+      openParametersDescription: false,
       needsRestart: false,
       ...this.simulationDefaults,
       ...this.visualizationDefaults
@@ -61,7 +63,7 @@ class App extends Component {
   }
 
   resetSimulation = () => {
-    this.setState(this.simulationDefaults);
+    this.setState({ ...this.simulationDefaults, needsRestart: true });
   }
 
   resetVisualization = () => {
@@ -73,6 +75,9 @@ class App extends Component {
 
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
+
+  handleOpenParametersDescription = () => this.setState({ openParametersDescription: true })
+  handleCloseParametersDescription = () => this.setState({ openParametersDescription: false })
 
   appendHistory = (value) => {
     const { fitnesses, currentFitness } = this.state;
@@ -124,6 +129,8 @@ class App extends Component {
 
             onSimulate={this.startSimulation}
             needsRestart={this.state.needsRestart}
+
+            onOpenParametersDescription={this.handleOpenParametersDescription}
           />
           <main className="App-main">
             <Canvas
@@ -144,9 +151,63 @@ class App extends Component {
           <DialogTitle id="form-dialog-title">Credits</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a>&nbsp;
-              from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by&nbsp;
-              <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
+              <div className="credits-imgs">
+                <img src="images/ut_logo.png"></img>
+                <img src="images/study_it.jpg"></img>
+              </div>
+              <div className="credits-icons">
+                Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>, licensed by&nbsp;
+                <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>
+              </div>
+            </DialogContentText>
+          </DialogContent>
+        </Dialog>
+        <Dialog
+          open={this.state.openParametersDescription}
+          onClose={this.handleCloseParametersDescription}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Parameters description</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Parameter</TableCell>
+                    <TableCell>Description</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Number of particles</TableCell>
+                    <TableCell>Size of the swarm</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Topology</TableCell>
+                    <TableCell>The topology of the swarm defines the subset of particles with which each particle can exchange information.</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>ω</TableCell>
+                    <TableCell>Previous velocity coefficient</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>φ<sub>p</sub></TableCell>
+                    <TableCell>Particle best coefficient</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>φ<sub>g</sub></TableCell>
+                    <TableCell>Global (or group's) best coefficient</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>max v.</TableCell>
+                    <TableCell>Maximum velocity of a particle, after which the value is cut.</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Optimization function</TableCell>
+                    <TableCell>One of the possible fitness landscapes for optimal value search</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </DialogContentText>
           </DialogContent>
         </Dialog>

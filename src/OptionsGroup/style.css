@@ -10,9 +10,9 @@
 .options-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     color: #424242;
 }
 
-.reset-button {
+.header-empty {
+  flex: 1;
 }
