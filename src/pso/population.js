@@ -153,7 +153,10 @@ export default class Population {
         particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
       }
 
-      this.updateParticle(particle, speed);
+    }
+
+    for (let particle of this.population) {
+        this.updateParticle(particle, speed);
     }
     this.epoch++;
   }
@@ -183,7 +186,10 @@ export default class Population {
       } else {
           particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
       }
-      this.updateParticle(particle, speed);
+    }
+
+    for (let particle of this.population) {
+        this.updateParticle(particle, speed);
     }
     this.epoch++;
   }
@@ -234,7 +240,10 @@ export default class Population {
             particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
           }
 
-          this.updateParticle(particle, speed);
+        }
+
+        for (let particle of this.population) {
+            this.updateParticle(particle, speed);
         }
         this.epoch++;
     }
