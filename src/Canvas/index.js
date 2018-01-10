@@ -341,10 +341,8 @@ class Population {
 
         // Network does not exist yet.
         var k = 3;
-        if (this.previousGBestNumerical) {
-          if (this.previousGBestNumerical === this.gBestNumerical) {
-            this.adaptionNetwork = null;
-          }
+        if (this.previousGBestNumerical && this.previousGBestNumerical <= this.gBestNumerical) {
+            this.adaptionNetwork = undefined;
         }
         this.previousGBestNumerical=this.gBestNumerical;
         // Array of arrays.
@@ -658,7 +656,7 @@ export default class Canvas extends Component {
       const meshFunction = (x, y) => {
         x = this.xRange * x + this.xMin;
         y = this.yRange * y + this.yMin;
-        var z = zFunc(x,y) * this.zScale();
+        var z = zFunc(x,y);
         if (isNaN(z))
           return new THREE.Vector3(0,0,0); // TODO: better fix
         else
@@ -668,6 +666,7 @@ export default class Canvas extends Component {
       // true => sensible image tile repeat...
       const graphGeometry = new THREE.ParametricGeometry(meshFunction, this.segments, this.segments, true );
       this.setupLandscapeColors(graphGeometry);
+
 
       // material choices: vertexColorMaterial, wireMaterial , normMaterial , shadeMaterial
       const wireTexture =  new THREE.TextureLoader().load( 'images/square.png' );
@@ -697,6 +696,11 @@ export default class Canvas extends Component {
 
       this.graphMesh = new THREE.Mesh( graphGeometry, wireMaterial );
       this.graphMesh.doubleSided = true;
+      // Rescl
+      for (let vertice of this.graphMesh.geometry.vertices) {
+        vertice.z = zFunc(vertice.x, vertice.y) * this.zScale();
+      }
+
       this.scene.add(this.graphMesh);
     }
 
