@@ -31,7 +31,7 @@ const ParametersDialog = ({ open, onClose, onOpenAlgorithm }) => (
             </TableRow>
             <TableRow>
               <TableCell>Topology</TableCell>
-              <TableCell>Defines the subset of particles with which each particle can exchange information.</TableCell>
+              <TableCell>Defines the subset of particles with which each particle shares their local best with.</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>ω</TableCell>
