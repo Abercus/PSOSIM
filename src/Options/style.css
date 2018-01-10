@@ -14,8 +14,8 @@
     display: flex;
 }
 
-.options-formula > *:nth-child(2) {
-    margin: 0 10px;
+.options-formula > *:not(:last-child) {
+    margin-right:10px;
 }
 
 .dimension-switch {
