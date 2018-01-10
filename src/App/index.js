@@ -23,6 +23,7 @@ class App extends Component {
     omega: 0.768,
     phiP: 0.5,
     phiG: 0.5,
+    speed: 5,
   }
 
   functionDefaults = {
@@ -76,6 +77,12 @@ class App extends Component {
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
 
+
+
+  setInitialSpeed = (value) => {
+    this.swarmDefaults.speed = value;
+    this.setState(this.swarmDefaults);
+  }
   appendHistory = (value) => {
     const { fitnesses, currentFitness } = this.state;
     fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([value]);
@@ -83,6 +90,7 @@ class App extends Component {
       fitnesses: fitnesses.slice(),
     });
   }
+
 
   clearHistory = () => {
     const { fitnesses, currentFitness } = this.state;
@@ -113,6 +121,7 @@ class App extends Component {
             onOmegaChange={this.setValue('omega')}
             onPhiPChange={this.setValue('phiP')}
             onPhiGChange={this.setValue('phiG')}
+            onSpeedChange={this.setValue('speed')}
 
             onOptimizationFunctionChange={this.setValue('optimizationFunction')}
             onPlaybackSpeedChange={this.setValue('playbackSpeed')}
@@ -129,6 +138,7 @@ class App extends Component {
               ref={canvas => { this.canvas = canvas; }}
               {...this.state}
               onImprovement={this.appendHistory}
+              onNewFunction={this.setInitialSpeed}
             />
           </main>
           <Graphs histories={this.state.fitnesses} onClear={this.clearHistory} />

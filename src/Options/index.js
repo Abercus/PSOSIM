@@ -21,6 +21,7 @@ const Options = ({
     omega,
     phiP,
     phiG,
+    speed,
     optimizationFunction,
     playbackSpeed,
     landscapeOpacity,
@@ -30,6 +31,7 @@ const Options = ({
     onOmegaChange,
     onPhiPChange,
     onPhiGChange,
+    onSpeedChange,
     onOptimizationFunctionChange,
     onPlaybackSpeedChange,
     onLandscapeOpacityChange,
@@ -69,7 +71,13 @@ const Options = ({
                     <InputLabel htmlFor='phi_g'>φ<sub>g</sub></InputLabel>
                     <Input type='number' value={phiG} onChange={unwrap(onPhiGChange, Number)} />
                 </FormControl>
+                <FormControl className='speed'>
+                    <InputLabel htmlFor='speed'>max v</InputLabel>
+                    <Input type='number' value={speed} onChange={unwrap(onSpeedChange, Number)} />
+                </FormControl>
             </div>
+
+
             <Button className="simulate-btn" raised color="primary" onClick={onSimulate}>Simulate</Button>
         </OptionsGroup>
         <OptionsGroup title="Function" onReset={onResetFunction}>
@@ -80,10 +88,10 @@ const Options = ({
                     onChange={unwrap(onOptimizationFunctionChange)}
                     autoWidth
                 >
-                    <MenuItem value='matyas'>Matyas</MenuItem>
                     <MenuItem value='ackley'>Ackley</MenuItem>
-                    <MenuItem value='himmelblau'>Himmelblau</MenuItem>
+                    <MenuItem value='matyas'>Matyas</MenuItem>
                     <MenuItem value='eggholder'>Eggholder</MenuItem>
+                    <MenuItem value='himmelblau'>Himmelblau</MenuItem>
                     <MenuItem value='sphere'>Sphere</MenuItem>
                     <MenuItem value='demo'>Demo</MenuItem>
                 </Select>
@@ -100,7 +108,7 @@ const Options = ({
             </FormControl>
             <FormControl className='form-control'>
                 <FormLabel>Landscape Flatness</FormLabel>
-                <Slider step={10} value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
+                <Slider step={5} value={landscapeFlatness} onChange={onLandscapeFlatnessChange}/>
             </FormControl>
         </OptionsGroup>
     </Paper>

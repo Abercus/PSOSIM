@@ -17,7 +17,7 @@ function getOptimizationParams(name) {
   if (name === "himmelblau") {
     return {xMin:-5, xMax:5,
       yMin:-5, yMax:5,
-      speed:0.1, cameraHeight:20,
+      speed:1, cameraHeight:100,
       particleSize: 0.2};
   }
   else if (name === "ackley") {
@@ -28,7 +28,7 @@ function getOptimizationParams(name) {
   } else if (name === "eggholder") {
     return {xMin:-512, xMax:512,
       yMin:-512, yMax:512,
-      speed:10, cameraHeight:750,
+      speed:5, cameraHeight:750,
       particleSize: 10};
   } else if (name === "sphere") {
     return {xMin:-800, xMax:800,
@@ -214,9 +214,9 @@ class Population {
   }
 
 
-  updateParticle(particle) {
+  updateParticle(particle, speed) {
     // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
-    var LIMIT = this.speed;
+    var LIMIT = speed;
     //LIMIT = 1;
     // Limit should depend on the task...
     if (particle.velocity.x < -LIMIT) {
@@ -287,7 +287,7 @@ class Population {
     }
   }
 
-  updateGlobal(omega, phiP, phiG) {
+  updateGlobal(omega, phiP, phiG, speed) {
     for (let particle of this.population) {
       if (this.optimizeByFunction) {
         var rand1 = Math.random();
@@ -304,11 +304,11 @@ class Population {
         particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
       }
 
-      this.updateParticle(particle);
+      this.updateParticle(particle, speed);
     }
   }
 
-  updateRing(omega, phiP, phiG) {
+  updateRing(omega, phiP, phiG, speed) {
     for (var i=0; i<this.population.length; i++) {
       var rand1 = Math.random();
       var rand2 = Math.random();
@@ -333,11 +333,11 @@ class Population {
       } else {
           particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
       }
-      this.updateParticle(particle);
+      this.updateParticle(particle, speed);
     }
   }
 
-    updateRandomAdaptive(omega, phiP, phiG) {
+    updateRandomAdaptive(omega, phiP, phiG, speed) {
 
         // Network does not exist yet.
         var k = 3;
@@ -383,7 +383,7 @@ class Population {
             particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
           }
 
-          this.updateParticle(particle);
+          this.updateParticle(particle, speed);
         }
     }
 
@@ -419,7 +419,7 @@ export default class Canvas extends Component {
 
     updateParticles = throttle(() => {
       const prevBest = this.pop.gBestNumerical;
-      this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG);
+      this.pop.updateFn(this.props.omega, this.props.phiP, this.props.phiG, this.props.speed);
 
       this.sphere.position.x = this.pop.gBest.x;
       this.sphere.position.y = this.pop.gBest.y;
@@ -507,6 +507,7 @@ export default class Canvas extends Component {
         this.params = getOptimizationParams(this.props.optimizationFunction);
 
 
+
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction) {
             // MOve this
             this.xMin = this.params.xMin;
@@ -516,6 +517,8 @@ export default class Canvas extends Component {
             this.xRange = this.xMax - this.xMin;
             this.yRange = this.yMax - this.yMin;
             this.particleSize = this.params.particleSize;
+
+            this.props.onNewFunction(this.params.speed);
             if (!this.CLICKABLE_DEMO) {
               this.createGraph();
             }
