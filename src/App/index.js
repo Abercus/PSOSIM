@@ -54,6 +54,7 @@ class App extends Component {
       fitnesses: this.state.fitnesses.concat([{values: [], index: this.index }]),
       currentFitness: this.state.fitnesses.length,
       currentBest: null,
+      speed: getOptimizationParams(this.state.optimizationFunction).speed,
     });
   }
 
