@@ -23,3 +23,10 @@
 .axis-label {
   font-size: 12px;
 }
+
+.current-best {
+  position: absolute;
+  right: 20px;
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 13px;
+}

@@ -38,6 +38,7 @@ class App extends Component {
     super();
     this.index = 0;
     this.state = {
+      currentBest: null,
       fitnesses: [{values: [], index: 0}],
       currentFitness: 0,
       openCredits: false,
@@ -52,6 +53,7 @@ class App extends Component {
     this.setState({
       fitnesses: this.state.fitnesses.concat([{values: [], index: this.index }]),
       currentFitness: this.state.fitnesses.length,
+      currentBest: null,
     });
   }
 
@@ -68,16 +70,12 @@ class App extends Component {
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
 
-  setInitialSpeed = (value) => {
-    this.swarmDefaults.speed = value;
-    this.setState(this.swarmDefaults);
-  }
-
   appendHistory = (value) => {
     const { fitnesses, currentFitness } = this.state;
     fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([value]);
     this.setState({
       fitnesses: fitnesses.slice(),
+      currentBest: value.value,
     });
   }
 
@@ -129,10 +127,9 @@ class App extends Component {
               optimizationFunction={getOptimizationFunction(this.state.optimizationFunction)}
               optimizationParams={getOptimizationParams(this.state.optimizationParams)}
               onImprovement={this.appendHistory}
-              onNewFunction={this.setInitialSpeed}
             />
           </main>
-          <Graphs histories={this.state.fitnesses} onClear={this.clearHistory} />
+          <Graphs histories={this.state.fitnesses} onClear={this.clearHistory} currentBest={this.state.currentBest} />
         </div>
         <Dialog
           open={this.state.openCredits}
