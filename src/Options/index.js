@@ -36,13 +36,12 @@ const Options = ({
     onPlaybackSpeedChange,
     onLandscapeOpacityChange,
     onLandscapeFlatnessChange,
-    onResetSwarm,
-    onResetFunction,
+    onResetSimulation,
     onResetVisualization,
     onSimulate,
 }) => (
     <Paper className='options'>
-        <OptionsGroup title="Swarm" onReset={onResetSwarm}>
+        <OptionsGroup title="Simulation" onReset={onResetSimulation}>
             <FormControl className='form-control'>
                 <InputLabel htmlFor='particles-number'>Number of particles</InputLabel>
                 <Input type='number' value={particlesNumber} onChange={unwrap(onParticlesNumberChange, Number)} />
@@ -76,11 +75,6 @@ const Options = ({
                     <Input type='number' value={speed} onChange={unwrap(onSpeedChange, Number)} />
                 </FormControl>
             </div>
-
-
-            <Button className="simulate-btn" raised color="primary" onClick={onSimulate}>Simulate</Button>
-        </OptionsGroup>
-        <OptionsGroup title="Function" onReset={onResetFunction}>
             <FormControl className='form-control' style={{ minWidth: 210 }}>
                 <InputLabel>Optimization function</InputLabel>
                 <Select
@@ -99,6 +93,7 @@ const Options = ({
                     <MenuItem value='demo'>Demo</MenuItem>
                 </Select>
             </FormControl>
+            <Button className="simulate-btn" raised color="primary" onClick={onSimulate}>Simulate</Button>
         </OptionsGroup>
         <OptionsGroup title="Visualization" onReset={onResetVisualization}>
             <FormControl className='form-control'>

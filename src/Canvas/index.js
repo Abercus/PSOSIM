@@ -1,455 +1,44 @@
 import React, { Component } from 'react';
+import { number, func, string, shape } from 'prop-types';
 import * as THREE from 'three';
 import ResizeSensor from 'css-element-queries/src/ResizeSensor';
-//import Parser from './parser';
+import OrbitControlsFactory from 'three-orbit-controls';
+
+import Population from '../pso/population';
+import { throttle } from '../util';
+import { generateRandom, testOptimizationFunction } from '../pso/math';
 
 import './style.css'
-const OrbitControls = require('three-orbit-controls')(THREE)
 
-
-function getOptimizationParams(name) {
-
-  if (name === "matyas") {
-    return {xMin:-5, xMax:5,
-      yMin:-5, yMax:5,
-      speed:0.1, cameraHeight:20,
-      particleSize: 0.2};
-  }
-  if (name === "himmelblau") {
-    return {xMin:-5, xMax:5,
-      yMin:-5, yMax:5,
-      speed:1, cameraHeight:100,
-      particleSize: 0.2};
-  }
-  if (name === "ackley") {
-      return {xMin:-5, xMax:5,
-        yMin:-5, yMax:5,
-        speed:0.1, cameraHeight:13,
-        particleSize: 0.1};
-  }
-  if (name === "rastrigin") {
-      return {xMin:-5.12, xMax:5.12,
-        yMin:-5.12, yMax:5.12,
-        speed:1, cameraHeight:20,
-        particleSize: 0.3};
-  }
-  if (name === "holder") {
-      return {xMin:-10, xMax:10,
-        yMin:-10, yMax:10,
-        speed:1, cameraHeight:20,
-        particleSize: 0.3};
-  }
-  if (name === "booth") {
-      return {xMin:-10, xMax:10,
-        yMin:-10, yMax:10,
-        speed:1, cameraHeight:70,
-        particleSize: 0.3};
-  }
-  if (name === "eggholder") {
-    return {xMin:-512, xMax:512,
-      yMin:-512, yMax:512,
-      speed:5, cameraHeight:750,
-      particleSize: 10};
-  }
-  if (name === "sphere") {
-    return {xMin:-800, xMax:800,
-      yMin:-800, yMax:800,
-      speed:8, cameraHeight:2300,
-      particleSize: 25};
-  }
-
-  return {xMin:-512, xMax:512,
-    yMin:-512, yMax:512,
-    speed:10, cameraHeight:750,
-    particleSize: 10};
-}
-
-function getOptimizationFunction(name) {
-    if (name === "matyas") {
-      // Matyas
-      return function(x, y) {
-        return 0.26*(x^2+y^2) - 0.48*x*y;
-      }
-    }
-    if (name === 'rastrigin') {
-      // A = 10, rastrigin, n = 2
-      return function(x, y) {
-        return 20 + (x*x - 10*Math.cos(2*Math.PI*x)) + (y*y - 10*Math.cos(2*Math.PI*y));
-      }
-    }
-
-    if (name === "holder") {
-      return function(x,y) {
-      // Holder table function
-        return -Math.abs(Math.sin(x)*Math.cos(y)*Math.exp(Math.abs(1-(Math.sqrt(x*x+y*y)/Math.PI))));
-      }
-    }
-
-    if (name === 'booth') {
-      // Booth
-      return function(x, y) {
-        return (Math.pow(x+2*y-7, 2) + Math.pow(2*x+y-5, 2));
-      }
-    }
-
-    if (name === 'sphere') {
-      // Sphere
-      return function(x, y) {
-        return (0.005 * Math.pow(x, 2) + 0.005 * Math.pow(y, 2));
-      }
-    }
-    if (name === 'eggholder') {
-      // Eggholder
-      return function(x, y) {
-        return (-1)*(y+47)*Math.sin(Math.sqrt(Math.abs(x/2 + (y+47))))-x*Math.sin(
-              Math.sqrt(Math.abs(x-(y+47))));
-        }
-    }
-    if (name === 'ackley') {
-      // Ackley
-        return function(x, y) {
-          return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI)))) + 20;
-        }
-    }
-
-    if (name === "himmelblau") {
-        return function(x, y) {
-          return Math.pow((x*x+y-11),2) + Math.pow((x+y*y-7),2);
-        }
-    }
-    if (name === "demo") {
-      // TODO, put actualy demo here.
-      return function(x, y) {
-        return (-20 * Math.pow(Math.E, (-0.2 * Math.sqrt(0.5 * (Math.pow(x, 2) + Math.pow(y, 2)))))) - (Math.pow(Math.E, (0.5 * Math.cos(y * 2 * Math.PI))));
-      }
-
-    }
-
-
-  throw Error();
-}
-
-var mod = function (n, m) {
-    var remain = n % m;
-    return Math.floor(remain >= 0 ? remain : remain + m);
-};
-
-function addition(v1,v2) {
-  return new THREE.Vector3(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
-}
-function addition_w(w,v1,v2) {
-  return new THREE.Vector3(w*(v1.x+v2.x), w*(v1.y+v2.y), w*(v1.z+v2.z));
-}
-
-// Neither
-function addition_2(v1,v2) {
-    return new THREE.Vector3(v1.x+v2.x, v1.y+v2.y, v1.z);
-}
-// With inertia
-function addition_2_w(w,v1,v2) {
-    return new THREE.Vector3(w*(v1.x)+v2.x, w*(v1.y)+v2.y, v1.z);
-}
-// With constriction factor
-function addition_3_w(w,v1,v2) {
-    return new THREE.Vector3(w*(v1.x+v2.y), w*(v1.y+v2.y), v1.z);
-}
-
-function subtract(v1,v2,c,rand1) {
-  return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), c*rand1*(v1.z-v2.z));
-}
-
-function subtract_2(v1,v2,c,rand1) {
-    return new THREE.Vector3(c*rand1*(v1.x-v2.x), c*rand1*(v1.y-v2.y), v1.z);
-}
-
-function euclidDistance(p1, p2) {
-  return Math.sqrt(Math.pow(p1.x - p2.x, 2)
-    + Math.pow(p1.y - p2.y, 2)
-    + Math.pow(p1.z - p2.z, 2));
-}
-
-
-function testOptimizationFunction(p, opt_vector) {
-  return euclidDistance(p, opt_vector);
-}
-
-function generateRandom(min, max) {
-  return  Math.random()*(min - max) + max;
-}
-
-
-function throttle(callback, wait=0, context = this) {
-  let timeout = null
-  let callbackArgs = null
-
-  const later = () => {
-    callback.apply(context, callbackArgs)
-    timeout = null
-  }
-
-  function throttled() {
-    if (!timeout) {
-      callbackArgs = arguments
-      timeout = setTimeout(later, wait)
-    }
-  }
-
-  throttled.setWait = (newWait) => {
-    wait = newWait;
-  };
-
-  return throttled;
-}
-
-// Class for whole population
-class Population {
-  constructor(pop, optimizeByFunction, topology, speed, xMin, xMax, yMin, yMax) {
-    this.population = pop;
-    this.gBest = null;
-    this.gBestNumerical = null;
-    this.speed = speed;
-    this.optimizeByFunction = optimizeByFunction;
-    this.xMin = xMin;
-    this.xMax = xMax;
-    this.yMin = yMin;
-    this.yMax = yMax;
-    this.referenceTime = new Date().getTime();
-    if (topology === "global") {
-      this.updateFn = this.updateGlobal;
-    } else if (topology === "random") {
-      this.updateFn = this.updateRandomAdaptive;
-    } else if (topology === "ring") {
-      this.updateFn = this.updateRing;
-    } else {
-      this.updateFn = this.updateGlobal;
-    }
-  }
-
-  set_optimization_goal(vector) {
-    this.optimization_goal = vector;
-    // When new goal then nullify bests
-    this.gBest = null;
-    this.gBestNumerical = null;
-    for (var i=0; i<this.population.length; i++) {
-      this.population[i].bestNumerical = testOptimizationFunction(this.population[i], vector);
-      this.population[i].pBest = new THREE.Vector3(this.population[i].x, this.population[i].y, this.population[i].bestNumerical);
-
-    }
-    this.findPopulationBest();
-
-  }
-
-  set_optimization_function(func) {
-    this.optimization_function = func;
-    this.gBest = null;
-    this.gBestNumerical = null;
-    for (var i=0; i<this.population.length; i++) {
-        this.population[i].bestNumerical = this.optimization_function(this.population[i].x, this.population[i].y);
-        this.population[i].pBest = new THREE.Vector3(this.population[i].x, this.population[i].y, this.population[i].bestNumerical);
-
-    }
-    this.findPopulationBest();
-  }
-
-
-  updateParticle(particle, speed) {
-    // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
-    var LIMIT = speed;
-    //LIMIT = 1;
-    // Limit should depend on the task...
-    if (particle.velocity.x < -LIMIT) {
-      particle.velocity.x = -LIMIT;
-    }
-    if (particle.velocity.x > LIMIT) {
-      particle.velocity.x = LIMIT;
-    }
-    if (particle.velocity.y < -LIMIT) {
-      particle.velocity.y = -LIMIT;
-    }
-    if (particle.velocity.y > LIMIT) {
-      particle.velocity.y = LIMIT;
-    }
-    if (!this.optimizeByFunction) {
-      if (particle.velocity.z < -LIMIT) {
-        particle.velocity.z = -LIMIT;
-      }
-      if (particle.velocity.z > LIMIT) {
-        particle.velocity.z = LIMIT;
-      }
-    }
-
-    // If bounded search area.
-    var newLocation = addition(particle, particle.velocity);
-    if (newLocation.x > this.xMax) {
-      if (particle.velocity.x > 0) {
-        particle.velocity.x *= -0.5;
-      }
-      newLocation.x = this.xMax;
-    } else if (newLocation.x < this.xMin) {
-        if (particle.velocity.x < 0) {
-          particle.velocity.x *= -0.5;
-        }
-      newLocation.x = this.xMin;
-    }
-    if (newLocation.y > this.yMax) {
-      if (particle.velocity.y > 0) {
-        particle.velocity.y *= -0.5;
-      }
-        newLocation.y = this.yMax;
-    } else if (newLocation.y < this.yMin) {
-      if (particle.velocity.y < 0) {
-        particle.velocity.y *= -0.5;
-      }
-        newLocation.y = this.yMin;
-    }
-
-    particle.x = newLocation.x;
-    particle.y = newLocation.y;
-    particle.z = newLocation.z;
-
-    if (!this.optimizeByFunction) {
-      particle.currentNumerical = testOptimizationFunction(particle, this.optimization_goal);
-    } else {
-      particle.currentNumerical = this.optimization_function(particle.x, particle.y);
-      particle.z = particle.currentNumerical;
-
-    }
-
-    if (particle.currentNumerical < particle.bestNumerical) {
-      particle.pBest = new THREE.Vector3(particle.x, particle.y, particle.z);
-      particle.bestNumerical = particle.currentNumerical;
-      if (particle.bestNumerical < this.gBestNumerical) {
-        this.gBestNumerical = particle.bestNumerical;
-        this.gBest = particle.pBest;
-      }
-    }
-  }
-
-  updateGlobal(omega, phiP, phiG, speed) {
-    for (let particle of this.population) {
-      if (this.optimizeByFunction) {
-        var rand1 = Math.random();
-        var rand2 = Math.random();
-        particle.velocity = addition_2_w(
-          omega,
-          particle.velocity,
-          addition_2(
-            subtract_2(particle.pBest, particle, phiP, rand1),
-            subtract_2(this.gBest, particle, phiG, rand2)
-          )
-        );
-      } else {
-        particle.velocity = addition_2_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(this.gBest, particle, phiG, rand2)));
-      }
-
-      this.updateParticle(particle, speed);
-    }
-  }
-
-  updateRing(omega, phiP, phiG, speed) {
-    for (var i=0; i<this.population.length; i++) {
-      var rand1 = Math.random();
-      var rand2 = Math.random();
-      var particle = this.population[i];
-      var left_neighbour = this.population[mod(i-1, this.population.length)];
-      var right_neighbour = this.population[mod(i+1, this.population.length)];
-      // Who has the best personalBest
-      var pB = particle.pBest;
-      var pbNum = particle.bestNumerical;
-
-      if (left_neighbour.bestNumerical < pbNum) {
-        pbNum = left_neighbour.bestNumerical;
-        pB = left_neighbour.pBest;
-      }
-      if (right_neighbour.bestNumerical < pbNum) {
-        pbNum = right_neighbour.bestNumerical;
-        pB = right_neighbour.pBest;
-      }
-
-      if (this.optimizeByFunction) {
-          particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
-      } else {
-          particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pB, particle, phiG, rand2)));
-      }
-      this.updateParticle(particle, speed);
-    }
-  }
-
-    updateRandomAdaptive(omega, phiP, phiG, speed) {
-
-        // Network does not exist yet.
-        var k = 3;
-        if (this.previousGBestNumerical && this.previousGBestNumerical <= this.gBestNumerical) {
-            this.adaptionNetwork = undefined;
-        }
-        this.previousGBestNumerical=this.gBestNumerical;
-        // Array of arrays.
-        if (!this.adaptionNetwork) {
-          // k = 3
-          this.adaptionNetwork = new Array(this.population.length);
-          for (var i=0; i<this.population.length; i++) {
-            this.adaptionNetwork[i] = [i]; // Everyone informs themselves
-          }
-
-          // Everyone informs k randoms
-          for (i=0; i<this.population.length; i++) {
-            for (var j=0; j<k; j++) {
-              this.adaptionNetwork[Math.floor(Math.random()*this.population.length)].push(i);
-            }
-          }
-        }
-
-        // update particles
-        for (i=0; i<this.population.length; i++) {
-          var particle = this.population[i];
-          var rand1 = Math.random();
-          var rand2 = Math.random();
-
-          // Check through particles in its Network
-          var pb = particle.pBest;
-          var pbNum = particle.bestNumerical;
-          for (var ind in this.adaptionNetwork[i]) {
-            if (this.population[ind].bestNumerical < pbNum) {
-              pbNum = this.population[ind].bestNumerical;
-              pb = this.population[ind].pBest;
-            }
-          }
-
-          if (this.optimizeByFunction) {
-            particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pb, particle, phiG, rand2)));
-          } else {
-            particle.velocity = addition_w(omega, particle.velocity, addition(subtract(particle.pBest, particle, phiP, rand1),subtract(pb, particle, phiG, rand2)));
-          }
-
-          this.updateParticle(particle, speed);
-        }
-    }
-
-  findPopulationBest() {
-    var bestNumerical = this.population[0].bestNumerical;
-    var best = this.population[0].pBest;
-    for (var i=1; i<this.population.length; i++) {
-      // Currently minimizing... Use a fitness function instead.
-      // Might add a checker to maximize, dependent on task.
-      if (this.population[i].bestNumerical < bestNumerical) {
-        bestNumerical = this.population[i].bestNumerical;
-        best = this.population[i].pBest;
-      }
-    }
-    if (this.gBestNumerical) {
-      if (bestNumerical < this.gBestNumerical) {
-          this.gBestNumerical = bestNumerical;
-          this.gBest = best;
-      }
-    } else {
-      this.gBestNumerical = bestNumerical;
-      this.gBest = best;
-    }
-
-  }
-}
+const OrbitControls = OrbitControlsFactory(THREE);
 
 export default class Canvas extends Component {
+
+    static propTypes = {
+      particlesNumber: number.isRequired,
+      topology: string.isRequired,
+      omega: number.isRequired,
+      phiP: number.isRequired,
+      phiG: number.isRequired,
+      speed: number.isRequired,
+      optimizationFunction: func.isRequired,
+      optimizationParams: shape({
+         xMin: number.isRequired,
+         xMax: number.isRequired,
+         yMin: number.isRequired,
+         yMax: number.isRequired,
+         speed: number.isRequired,
+         cameraHeight: number.isRequired,
+         particleSize: number.isRequired,
+      }).isRequired,
+
+      landscapeFlatness: number.isRequired,
+      playbackSpeed: number.isRequired,
+      landscapeOpacity: number.isRequired,
+
+      onImprovement: func.isRequired,
+    }
+
     constructor() {
       super();
       this.segments = 200;
@@ -485,11 +74,9 @@ export default class Canvas extends Component {
         this.startTime = this.then;
         this.animate();
     }
+
     animate() {
       var rem = this.animate.bind(this);
-
-      requestAnimationFrame(rem);
-
 
       var now = Date.now();
       var elapsed = now - this.then;
@@ -498,9 +85,9 @@ export default class Canvas extends Component {
           this.then = now - (elapsed % this.fpsInterval);
           this.updateParticles();
 
-
           this.renderer.render(this.scene, this.camera);
       }
+      requestAnimationFrame(rem);
     }
 
     zScale(landscapeFlatness = this.props.landscapeFlatness) {
@@ -530,7 +117,6 @@ export default class Canvas extends Component {
 
 
     // FINISH ADDITIONS!!!! END
-
     trackResize() {
         this.resizeSensor = new ResizeSensor(this.root, () => {
             this.camera.aspect = this.root.offsetWidth/this.root.offsetHeight;
@@ -540,23 +126,19 @@ export default class Canvas extends Component {
         });
     }
 
+    get xRange() {
+      return this.props.optimizationParams.xMax - this.props.optimizationParams.xMin;
+    }
+
+    get yRange() {
+      return this.props.optimizationParams.yMax - this.props.optimizationParams.yMin;
+    }
+
     resetSimulation() {
-        const optimizationFunction = getOptimizationFunction(this.props.optimizationFunction);
-        this.params = getOptimizationParams(this.props.optimizationFunction);
-
-
+        const { xMin, xMax, yMin, yMax, speed, cameraHeight, particleSize } = this.props.optimizationParams;
 
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction) {
-            // MOve this
-            this.xMin = this.params.xMin;
-            this.xMax = this.params.xMax;
-            this.yMin = this.params.yMin;
-            this.yMax = this.params.yMax;
-            this.xRange = this.xMax - this.xMin;
-            this.yRange = this.yMax - this.yMin;
-            this.particleSize = this.params.particleSize;
 
-            this.props.onNewFunction(this.params.speed);
             if (!this.CLICKABLE_DEMO) {
               this.createGraph();
             }
@@ -565,12 +147,15 @@ export default class Canvas extends Component {
             this.sphere.material.dispose();
             this.sphere.geometry.dispose();
 
-            var geometry = new THREE.SphereGeometry( this.particleSize * 0.7, 32, 32 );
-            var material = new THREE.MeshBasicMaterial( {color: 0xffff00,
-              transparent:true, opacity:0.5 } );
+            var geometry = new THREE.SphereGeometry(particleSize * 0.7, 32, 32);
+            var material = new THREE.MeshBasicMaterial({
+              color: 0xffff00,
+              transparent:true,
+              opacity:0.5
+            });
             this.sphere = new THREE.Mesh( geometry, material );
             this.scene.add(this.sphere);
-            this.camera.position.set(0, 0, this.params.cameraHeight);
+            this.camera.position.set(0, 0, cameraHeight);
             this.camera.lookAt(new THREE.Vector3(0,0,0));
 
         }
@@ -585,27 +170,28 @@ export default class Canvas extends Component {
         this.particles = new THREE.Geometry();
 
         this.pMaterial = new THREE.PointsMaterial({
-          size: this.params.particleSize*1.5,
+          size: particleSize*1.5,
           map: this.createCircleTexture('#ffffff', 256),
           transparent: true,
           depthWrite: false
         })
         var pZ = null;
+
         for (var p = 0; p < this.props.particlesNumber; p++) {
-          var pX = generateRandom(this.params.xMin, this.params.xMax),
-            pY = generateRandom(this.params.yMin, this.params.yMax);
+          var pX = generateRandom(xMin, xMax),
+            pY = generateRandom(yMin, yMax);
             if (this.CLICKABLE_DEMO) {
               pZ = Math.random() * 800 - 400;
             } else {
-              pZ = optimizationFunction(pX, pY) * this.zScale();
+              pZ = this.props.optimizationFunction(pX, pY) * this.zScale();
             }
 
             var particle = new THREE.Vector3(pX, pY, pZ);
             //particle.velocity = new THREE.Vector3((Math.random()*1024-512 - pX)/2, (Math.random()*1024-512 - pY)/2, 0);
 
             particle.velocity = new THREE.Vector3(
-              generateRandom(-this.params.speed, this.params.speed),
-              generateRandom(-this.params.speed, this.params.speed),
+              generateRandom(-speed, speed),
+              generateRandom(-speed, speed),
               0);
 
             if (this.CLICKABLE_DEMO) {
@@ -626,17 +212,18 @@ export default class Canvas extends Component {
             this.particles,
             this.pMaterial);
         this.particleSystem.sortParticles = true;
-        const bounds = [this.xMin, this.xMax, this.yMin, this.yMax];
-        if (this.CLICKABLE_DEMO) {
-          this.pop = new Population(this.particles.vertices, false, this.props.topology, this.params.speed, ...bounds);
-          this.pop.set_optimization_goal(this.sphere.position);
 
+        const bounds = [xMin, xMax, yMin, yMax];
+        if (this.CLICKABLE_DEMO) {
+          this.pop = new Population(this.particles.vertices, false, this.props.topology, speed, ...bounds);
+          this.pop.set_optimization_goal(this.sphere.position);
         } else {
-          this.pop = new Population(this.particles.vertices, true, this.props.topology, this.params.speed, ...bounds);
-          this.pop.set_optimization_function(optimizationFunction);
+          this.pop = new Population(this.particles.vertices, true, this.props.topology, speed, ...bounds);
+          this.pop.set_optimization_function(this.props.optimizationFunction);
         }
         this.particleSystem.geometry.verticesNeedUpdate = true;
         this.scene.add(this.particleSystem);
+        console.log(this.pop);
     }
 
     setupVisualization() {
@@ -658,7 +245,6 @@ export default class Canvas extends Component {
         this.scene.add(floor);
         // bgcolor
         this.renderer.setClearColor( 0xbebebe, 1 );
-
     }
 
     setupLandscapeColors(graphGeometry) {
@@ -692,11 +278,11 @@ export default class Canvas extends Component {
     }
 
     createGraph() {
-      const zFunc = getOptimizationFunction(this.props.optimizationFunction);
+      const zFunc = this.props.optimizationFunction;
 
       const meshFunction = (x, y) => {
-        x = this.xRange * x + this.xMin;
-        y = this.yRange * y + this.yMin;
+        x = this.xRange * x + this.props.optimizationParams.xMin;
+        y = this.yRange * y + this.props.optimizationParams.yMin;
         var z = zFunc(x,y);
         if (isNaN(z))
           return new THREE.Vector3(0,0,0); // TODO: better fix
@@ -738,6 +324,7 @@ export default class Canvas extends Component {
       this.graphMesh = new THREE.Mesh( graphGeometry, wireMaterial );
       this.graphMesh.doubleSided = true;
       // Rescl
+      console.log(this.graphMesh.geometry.vertices);
       for (let vertice of this.graphMesh.geometry.vertices) {
         vertice.z = zFunc(vertice.x, vertice.y) * this.zScale();
       }
@@ -833,7 +420,7 @@ export default class Canvas extends Component {
         this.updateParticles.setWait(1000 / nextProps.playbackSpeed);
       }
       if (nextProps.landscapeFlatness !== this.props.landscapeFlatness) {
-        const zFunc = getOptimizationFunction(this.props.optimizationFunction);
+        const zFunc = this.props.optimizationFunction;
         for (let vertice of this.graphMesh.geometry.vertices) {
           vertice.z = zFunc(vertice.x, vertice.y) * this.zScale(nextProps.landscapeFlatness);
         }

@@ -14,19 +14,17 @@ import './style.css';
 import Canvas from '../Canvas';
 import Graphs from '../Graphs'
 import Options from '../Options';
+import { getOptimizationParams, getOptimizationFunction } from '../pso/functions';
 
 
 class App extends Component {
-  swarmDefaults = {
+  simulationDefaults = {
     particlesNumber: 15,
     topology: 'global',
     omega: 0.768,
     phiP: 0.5,
     phiG: 0.5,
     speed: 5,
-  }
-
-  functionDefaults = {
     optimizationFunction: 'eggholder',
   }
 
@@ -43,8 +41,7 @@ class App extends Component {
       fitnesses: [{values: [], index: 0}],
       currentFitness: 0,
       openCredits: false,
-      ...this.swarmDefaults,
-      ...this.functionDefaults,
+      ...this.simulationDefaults,
       ...this.visualizationDefaults
     };
   }
@@ -58,14 +55,8 @@ class App extends Component {
     });
   }
 
-  resetSwarm = () => {
-    this.setState(this.swarmDefaults);
-    this.startSimulation();
-  }
-
-  resetFunction = () => {
-    this.setState(this.functionDefaults);
-    this.startSimulation();
+  resetSimulation = () => {
+    this.setState(this.simulationDefaults);
   }
 
   resetVisualization = () => {
@@ -77,12 +68,11 @@ class App extends Component {
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
 
-
-
   setInitialSpeed = (value) => {
     this.swarmDefaults.speed = value;
     this.setState(this.swarmDefaults);
   }
+
   appendHistory = (value) => {
     const { fitnesses, currentFitness } = this.state;
     fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([value]);
@@ -90,7 +80,6 @@ class App extends Component {
       fitnesses: fitnesses.slice(),
     });
   }
-
 
   clearHistory = () => {
     const { fitnesses, currentFitness } = this.state;
@@ -122,13 +111,13 @@ class App extends Component {
             onPhiPChange={this.setValue('phiP')}
             onPhiGChange={this.setValue('phiG')}
             onSpeedChange={this.setValue('speed')}
-
             onOptimizationFunctionChange={this.setValue('optimizationFunction')}
+
             onPlaybackSpeedChange={this.setValue('playbackSpeed')}
             onLandscapeOpacityChange={this.setValue('landscapeOpacity')}
             onLandscapeFlatnessChange={this.setValue('landscapeFlatness')}
-            onResetSwarm={this.resetSwarm}
-            onResetFunction={this.resetFunction}
+
+            onResetSimulation={this.resetSimulation}
             onResetVisualization={this.resetVisualization}
 
             onSimulate={this.startSimulation}
@@ -137,6 +126,8 @@ class App extends Component {
             <Canvas
               ref={canvas => { this.canvas = canvas; }}
               {...this.state}
+              optimizationFunction={getOptimizationFunction(this.state.optimizationFunction)}
+              optimizationParams={getOptimizationParams(this.state.optimizationParams)}
               onImprovement={this.appendHistory}
               onNewFunction={this.setInitialSpeed}
             />
