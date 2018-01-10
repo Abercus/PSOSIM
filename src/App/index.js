@@ -26,7 +26,7 @@ class App extends Component {
   }
 
   functionDefaults = {
-    optimizationFunction: 'matyas',
+    optimizationFunction: 'eggholder',
   }
 
   visualizationDefaults = {
