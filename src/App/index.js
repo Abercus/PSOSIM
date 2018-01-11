@@ -57,9 +57,10 @@ class App extends Component {
       fitnesses: this.state.fitnesses.concat([{values: [], index: this.index }]),
       currentFitness: this.state.fitnesses.length,
       currentBest: null,
-      speed: getOptimizationParams(this.state.optimizationFunction).speed,
+      speed: this.functionChanged ? getOptimizationParams(this.state.optimizationFunction).speed : this.state.speed,
       needsRestart: false,
     });
+    this.functionChanged = false;
   }
 
   resetSimulation = () => {
@@ -71,7 +72,12 @@ class App extends Component {
   }
 
   setValue = (field) => (value) => this.setState({ [field]: value })
-  setRestartValue = (field) => (value) => this.setState({ [field]: value, needsRestart: true })
+  setRestartValue = (field) => (value) => this.setState({ [field]: value, needsRestart: value !== this.state[field] })
+
+  setOptimizationFunction = (optimizationFunction) => {
+    this.functionChanged = optimizationFunction !== this.state.optimizationFunction;
+    this.setState({ optimizationFunction, needsRestart: this.functionChanged });
+  }
 
   handleOpenCredits = () => this.setState({ openCredits: true })
   handleCloseCredits = () => this.setState({ openCredits: false })
@@ -125,7 +131,7 @@ class App extends Component {
             onPhiPChange={this.setValue('phiP')}
             onPhiGChange={this.setValue('phiG')}
             onSpeedChange={this.setValue('speed')}
-            onOptimizationFunctionChange={this.setRestartValue('optimizationFunction')}
+            onOptimizationFunctionChange={this.setOptimizationFunction}
 
             onPlaybackSpeedChange={this.setValue('playbackSpeed')}
             onLandscapeOpacityChange={this.setValue('landscapeOpacity')}
