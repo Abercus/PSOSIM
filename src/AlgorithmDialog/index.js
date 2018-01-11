@@ -9,6 +9,7 @@ import './style.css';
 
 const AlgorithmDialog = ({ open, onClose }) => (
   <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
+
     <DialogTitle id="form-dialog-title">Algorithm</DialogTitle>
     <DialogContent>
       <DialogContentText className="algorithm-content">
@@ -24,6 +25,9 @@ const AlgorithmDialog = ({ open, onClose }) => (
         </p>
         <img src="images/map.jpg" alt="Map" />
         <div className="image-caption">Visualization of particle swarm visualization [2]</div>
+
+        <img src="images/globalbest.png" alt="Global best" />
+        <div className="image-caption">Yellow sphere states globally best found solution </div>
         <p>
           PSO works in an iterative process. First generation of particles is
           initialised with random positions and velocities. Algorithm approaches
@@ -85,6 +89,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
               - influence factor of personal/global best
             </li>
           </ul>
+
           <p>
             Selecting factors{" "}
             <i>

@@ -114,8 +114,8 @@ class App extends Component {
             <Typography type="title" color="inherit" className="App-title">
               Particle swarm optimization
             </Typography>
-            <Button color="contrast" onClick={this.handleOpenCredits}>Credits</Button>
             <Button color="contrast" onClick={this.handleOpenAlgorithm}>Algorithm</Button>
+            <Button color="contrast" onClick={this.handleOpenCredits}>Credits</Button>
             <IconButton href="https://github.com/Abercus/PSOSIM" aria-labelledby="demo-github" color="contrast">
               <GitHub />
             </IconButton>
