@@ -3,7 +3,12 @@
 }
 
 .algorithm-content img {
-  margin: 20px 0;
+  margin: 20px 0 0;
+}
+
+.algorithm-content .image-caption {
+  margin-bottom: 40px;
+  font-size: 14px;
 }
 
 .algorithm-content p, .algorithm-content ul {

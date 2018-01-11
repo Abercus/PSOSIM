@@ -23,6 +23,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           effective one is to follow the bird which is nearest to the food.{" "}
         </p>
         <img src="images/map.jpg" alt="Map" />
+        <div className="image-caption">Visualization of particle swarm visualization [1]</div>
         <p>
           PSO works in an iterative process. First generation of particles is
           initialised with random positions and velocities. Algorithm approaches
@@ -118,7 +119,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
             </i>, particles will move more towards the global best-found
             location. Inertia weight <i> &omega; </i> determines the
             contribution rate of a particle's previous velocity to its current
-            velocity.
+            velocity. [2]
           </p>
           <p>The formula for updating velocity is:</p>
           <p>
@@ -204,6 +205,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           we mean the value of particle's location on <i>d</i>-th dimension.
         </p>
         <img src="images/vectors.jpg" alt="Vectors" />
+        <div className="image-caption">Vectors applied to a particle [3]</div>
         <p>
           Three vectors applied to a particle in one iteration of a Particle
           Swarm Optimization are:{" "}
@@ -241,7 +243,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           </li>
         </ul>
         <img className="flowchart" src="images/flow.jpg" alt="Flowchart" />
-        <div>Flowchart of PSO algorithm. Different topologies update particles velocities by finding best local best in their neighbourhood.</div>
+        <div className="image-caption">Flowchart of PSO algorithm. Different topologies update particles velocities by finding best local best in their neighbourhood [5].</div>
         <p>
           The simulator also gives you a chance to try out different topologies.
         </p>
@@ -268,30 +270,30 @@ const AlgorithmDialog = ({ open, onClose }) => (
           </li>
         </ul>
         <img src="images/topologies.jpg" alt="Topologies" className="algorithm-topologies"/>
-        <div>Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies.</div>
+        <div>Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies [6].</div>
 
         <p>
           In the simulation collisions with boundary are handled by having particle "bounce" of it.
           Particle will change its direction and lose half of its directional speed.
           Ex. if particle collided with y-boundary then its speed in y-axis direction will be reversed and halved.
-          In demo case the particle will bounce off without loss of speed.
+          In demo case the particle will bounce off without loss of speed. [7]
         </p>
 
         <p className="algorithm-references">
           {" "}
           <b>References:</b>
           <ol>
-            <li><a href="http://www.swarmintelligence.org/tutorials.php">Xiaouhui Hu "PSO Tutorial", 2006.</a></li>
-            <li><a href="http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf">Maurice Clerc "Standard Particle Swarm Optimisation", 2012.</a></li>
-            <li><a href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Test functions for optimization</a></li>
             <li><a href="https://se.mathworks.com/matlabcentral/fileexchange/43541-particle-swarm-optimization--pso-">
               MathWorks "Particle Swarm Optimization"
             </a></li>
+            <li><a href="http://www.swarmintelligence.org/tutorials.php">Xiaouhui Hu "PSO Tutorial", 2006.</a></li>
+            <li><a href="http://www.jade-cheng.com/au/coalhmm/optimization/">Jade Cheng Yu "Numerical Optimization"</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Test functions for optimization</a></li>
+            <li><a href="https://www.hindawi.com/journals/acisc/2012/897127/">Sushree Sangita Patnaik, Anup Kumar Panda "Particle Swarm Optimization and Bacterial Foraging Optimization Techniques for Optimal Current Harmonic Mitigation by Employing Active Power Filter", 2012</a></li>
             <li><a href="https://dev.heuristiclab.com/trac.fcgi/wiki/Documentation/Reference/Particle%20Swarm%20Optimization">
               HeuristicLab "Particle Swarm Optimization"
             </a></li>
-            <li><a href="http://www.jade-cheng.com/au/coalhmm/optimization/">Jade Cheng Yu "Numerical Optimization"</a></li>
-            <li><a href="https://www.hindawi.com/journals/acisc/2012/897127/">Sushree Sangita Patnaik, Anup Kumar Panda "Particle Swarm Optimization and Bacterial Foraging Optimization Techniques for Optimal Current Harmonic Mitigation by Employing Active Power Filter", 2012</a></li>
+            <li><a href="http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf">Maurice Clerc "Standard Particle Swarm Optimisation", 2012.</a></li>
           </ol>
         </p>
       </DialogContentText>
