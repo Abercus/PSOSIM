@@ -1,6 +1,6 @@
 {
-  "name": "Particle Swarm Optimization Simulation",
-  "version": "0.1.0",
+  "name": "psosim",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "css-element-queries": "^0.4.0",
