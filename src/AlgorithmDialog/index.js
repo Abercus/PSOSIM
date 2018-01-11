@@ -153,7 +153,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           </i>
         </p>
         <p>
-          We assume that for each dimension d the particle must stay inside{" "}
+          For each dimension <i>d</i> (in simulation's case two dimensions), the particle is bounded by interval{" "}
           <i>
             [min<sub>d</sub> , max<sub>d</sub>]
           </i>. If this criterion is not met, the velocity is modified:
@@ -240,12 +240,8 @@ const AlgorithmDialog = ({ open, onClose }) => (
             unknown regions of the problem domain.{" "}
           </li>
         </ul>
-        ?
-        <p>
-          The flowchart of the full PSO algorithm with global topology is as
-          follows:
-        </p>
         <img className="flowchart" src="images/flow.jpg" alt="Flowchart" />
+        <div>Flowchart of PSO algorithm. Different topologies update particles velocities by finding best local best in their neighbourhood.</div>
         <p>
           The simulator also gives you a chance to try out different topologies.
         </p>
@@ -271,7 +267,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
             The neighbourhood is set in the beginning and does not change during the simulation.
           </li>
         </ul>
-        <img src="images/topologies.jpg" alt="Topologies" className="topologies"/>
+        <img src="images/topologies.jpg" alt="Topologies" className="algorithm-topologies"/>
         <div>Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies.</div>
 
         <p>
@@ -281,19 +277,22 @@ const AlgorithmDialog = ({ open, onClose }) => (
           In demo case the particle will bounce off without loss of speed.
         </p>
 
-        <p>
+        <p className="algorithm-references">
           {" "}
           <b>References:</b>
-          <br />Xiaouhui Hu "PSO Tutorial", 2006.
-          http://www.swarmintelligence.org/tutorials.php
-          <br />Maurice Clerc "Standard Particle Swarm Optimisation", 2012.
-          http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf
-          <br />Test functions for optimization:
-          https://en.wikipedia.org/wiki/Test_functions_for_optimization
-          <br />https://se.mathworks.com/matlabcentral/fileexchange/43541-particle-swarm-optimization--pso-
-          <br />https://dev.heuristiclab.com/trac.fcgi/wiki/Documentation/Reference/Particle%20Swarm%20Optimization
-          <br />http://www.jade-cheng.com/au/coalhmm/optimization/
-          <br />https://www.hindawi.com/journals/acisc/2012/897127/
+          <ul>
+            <li><a href="http://www.swarmintelligence.org/tutorials.php">Xiaouhui Hu "PSO Tutorial", 2006.</a></li>
+            <li><a href="http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf">Maurice Clerc "Standard Particle Swarm Optimisation", 2012.</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Test functions for optimization</a></li>
+            <li><a href="https://se.mathworks.com/matlabcentral/fileexchange/43541-particle-swarm-optimization--pso-">
+              MathWorks "Particle Swarm Optimization"
+            </a></li>
+            <li><a href="https://dev.heuristiclab.com/trac.fcgi/wiki/Documentation/Reference/Particle%20Swarm%20Optimization">
+              HeuristicLab "Particle Swarm Optimization"
+            </a></li>
+            <li><a href="http://www.jade-cheng.com/au/coalhmm/optimization/">Jade Cheng Yu "Numerical Optimization"</a></li>
+            <li><a href="https://www.hindawi.com/journals/acisc/2012/897127/">Sushree Sangita Patnaik, Anup Kumar Panda "Particle Swarm Optimization and Bacterial Foraging Optimization Techniques for Optimal Current Harmonic Mitigation by Employing Active Power Filter", 2012</a></li>
+          </ul>
         </p>
       </DialogContentText>
     </DialogContent>
