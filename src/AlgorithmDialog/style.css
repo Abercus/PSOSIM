@@ -2,6 +2,18 @@
   text-align: center
 }
 
+.algorithm-content img {
+  margin: 20px 0;
+}
+
 .algorithm-content p, .algorithm-content ul {
   text-align: left;
+}
+
+.flowchart {
+  height: 600px;
+}
+
+.topologies {
+  width: 400px;
 }

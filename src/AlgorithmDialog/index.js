@@ -8,7 +8,7 @@ import Dialog, {
 import './style.css';
 
 const AlgorithmDialog = ({ open, onClose }) => (
-  <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title" maxWidth={false}>
+  <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
     <DialogTitle id="form-dialog-title">Algorithm</DialogTitle>
     <DialogContent>
       <DialogContentText className="algorithm-content">
@@ -23,7 +23,6 @@ const AlgorithmDialog = ({ open, onClose }) => (
           effective one is to follow the bird which is nearest to the food.{" "}
         </p>
         <img src="images/map.jpg" alt="Map" />
-        <p>#Some comments here, or not</p>
         <p>
           PSO works in an iterative process. First generation of particles is
           initialised with random positions and velocities. Algorithm approaches
@@ -246,36 +245,42 @@ const AlgorithmDialog = ({ open, onClose }) => (
           The flowchart of the full PSO algorithm with global topology is as
           follows:
         </p>
-        <img src="images/flow.jpg" alt="Flowchart" />
+        <img className="flowchart" src="images/flow.jpg" alt="Flowchart" />
         <p>
           The simulator also gives you a chance to try out different topologies.
         </p>
         <ul>
           <li>
-            Global topology allows all particles to communicate with all the
-            other particles (entire system shares the same best position{" "}
+            In <b>global topology</b> all particles share their local best, therefore each particle has information on currently found global best
+            {" "}
             <i>
               {" "}
               <b>p</b>
               <sub>k</sub>
               <sup>g</sup>{" "}
-            </i>)
+            </i>
           </li>
           <li>
-            Adaptive random topology allows each particle to inform <i>K</i>{" "}
-            particles and itself only at the very beginning and after each
-            unsuccessful iteration (no improvement on the best-known fitness
-            value).
+            <b>Adaptive random topology</b> has each particle inform <i>K</i> random particles and itself.
+            The neighbourhood will be built in the beginning and after epoch where there was no improvement on best-known fitness value.
           </li>
           <li>
-            Ring topology allows particles to inform 2 other particles (3
-            including itself) in its neighbourhood. The neighbourhood of the
-            particle <i>i</i> is: <i>i-1 mod(S), i, i+1 mod(S)</i>, where{" "}
+            In <b>ring topology</b> each particle informs 2 other particles and itself.
+            The neighbourhood of the particle <i>i</i> is: <i>i-1 mod(S), i, i+1 mod(S)</i>, where{" "}
             <i>S</i> is the total number of particles.
+            The neighbourhood is set in the beginning and does not change during the simulation.
           </li>
         </ul>
-        <img src="images/topologies.jpg" alt="Topologies" />
-        <p>Graphical representation of global, ring and random topologies.</p>
+        <img src="images/topologies.jpg" alt="Topologies" className="topologies"/>
+        <div>Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies.</div>
+
+        <p>
+          In the simulation collisions with boundary are handled by having particle "bounce" of it.
+          Particle will change its direction and lose half of its directional speed.
+          Ex. if particle collided with y-boundary then its speed in y-axis direction will be reversed and halved.
+          In demo case the particle will bounce off without loss of speed.
+        </p>
+
         <p>
           {" "}
           <b>References:</b>
