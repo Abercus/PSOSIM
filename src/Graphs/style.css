@@ -24,9 +24,18 @@
   font-size: 12px;
 }
 
-.current-best {
+.fitness-box {
   position: absolute;
   right: 20px;
   color: rgba(0, 0, 0, 0.54);
   font-size: 13px;
+}
+
+.fitness-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.54);
+  margin-bottom: 2px;
+}
+
+.fitness-values {
+  font-size: 12px;
 }

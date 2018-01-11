@@ -17,7 +17,16 @@ const Graphs = ({ histories, onClear, currentBest }) => {
         <h4 className="graphs-title">History</h4>
         <Button className="graphs-clear-btn" raised onClick={onClear}>Clear old</Button>
       </div>
-      {currentBest !== null && <span className="current-best">Current fitness: <b>{currentBest}</b></span>}
+      {currentBest !== null &&
+        <div className="fitness-box">
+          <div className="fitness-header">Current fitness</div>
+          <div className="fitness-values">
+            <div><b>X</b>: {currentBest.x}</div>
+            <div><b>Y</b>: {currentBest.y}</div>
+            <div><b>Value</b>: {currentBest.z}</div>
+          </div>
+        </div>
+      }
       <ScatterChart width={400} height={200}>
         {histories.map(({ values, index }) => (
           <Scatter key={index} data={values.map(({ epoch, value }) => ({ x: epoch, y: value }))} line fill={`#${colors[index % 10]}`} />

@@ -88,12 +88,12 @@ class App extends Component {
   handleOpenAlgorithm = () => this.setState({ openAlgorithm: true })
   handleCloseAlgorithm = () => this.setState({ openAlgorithm: false })
 
-  appendHistory = (value) => {
+  appendHistory = ({ epoch, value }) => {
     const { fitnesses, currentFitness } = this.state;
-    fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([value]);
+    fitnesses[currentFitness].values = fitnesses[currentFitness].values.concat([{ epoch, value: value.z }]);
     this.setState({
       fitnesses: fitnesses.slice(),
-      currentBest: value.value,
+      currentBest: value,
     });
   }
 

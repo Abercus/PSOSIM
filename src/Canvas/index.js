@@ -66,7 +66,7 @@ export default class Canvas extends Component {
       if (this.prevBest === null || this.pop.gBestNumerical < this.prevBest) {
         this.props.onImprovement({
           epoch: this.pop.epoch,
-          value: this.pop.gBestNumerical,
+          value: this.pop.gBest,
         });
       }
       this.prevBest = this.pop.gBestNumerical;
