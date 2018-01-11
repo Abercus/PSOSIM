@@ -39,11 +39,11 @@ const ParametersDialog = ({ open, onClose, onOpenAlgorithm }) => (
             </TableRow>
             <TableRow>
               <TableCell>φ<sub>p</sub></TableCell>
-              <TableCell>Particle best coefficient.</TableCell>
+              <TableCell>Coefficient (influence) of particle's personal best.</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>φ<sub>g</sub></TableCell>
-              <TableCell>Global (or group's) best coefficient.</TableCell>
+              <TableCell>Coefficient (influence) of particle's neighbourhood's (according to topology) best.</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>max v</TableCell>
@@ -51,7 +51,7 @@ const ParametersDialog = ({ open, onClose, onOpenAlgorithm }) => (
             </TableRow>
             <TableRow>
               <TableCell>Optimization function</TableCell>
-              <TableCell>One of the possible fitness landscapes for optimal value search. (See function descriptions <a href="https://l.messenger.com/l.php?u=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FTest_functions_for_optimization%23Test_functions_for_single-objective_optimization&h=ATMi8JaewAm9tRY_N0KPOKiCxqFV_yr_GfoFDMiYPIbdhGkd3MmCUW0Zb5q95JAbFQ1dNGfDD4MWJ3cZMC4bYrEheAf9OhsF5os0Q_66hENgU9LJhLkntHds3oLFx-qWme3RHg">here</a>).</TableCell>
+              <TableCell>One of the possible fitness landscapes for optimal value search. (See descriptions of functions <a href="https://l.messenger.com/l.php?u=https%3A%2F%2Fen.wikipedia.org%2Fwiki%2FTest_functions_for_optimization%23Test_functions_for_single-objective_optimization&h=ATMi8JaewAm9tRY_N0KPOKiCxqFV_yr_GfoFDMiYPIbdhGkd3MmCUW0Zb5q95JAbFQ1dNGfDD4MWJ3cZMC4bYrEheAf9OhsF5os0Q_66hENgU9LJhLkntHds3oLFx-qWme3RHg">here</a>).</TableCell>
             </TableRow>
           </TableBody>
         </Table>
