@@ -20,7 +20,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           area. There is only one piece of food in the area being searched.
           Birds do not know where the food is, but they know how far the food is
           in each iteration. So, what's the best strategy to find the food? The
-          effective one is to follow the bird which is nearest to the food. [1]{" "}
+          effective one is to follow the bird which is nearest to the food [1]. {" "}
         </p>
         <img src="images/map.jpg" alt="Map" />
         <div className="image-caption">Visualization of particle swarm visualization [2]</div>
@@ -154,7 +154,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           </i> [1]
         </p>
         <p>
-          For each dimension [7]<i>d</i> (in simulation's case two dimensions), the particle is bounded by interval{" "}
+          For each dimension <i>d</i> (in simulation's case two dimensions), the particle is bounded by interval{" "}
           <i>
             [min<sub>d</sub> , max<sub>d</sub>]
           </i>. If this criterion is not met, the velocity is modified:
@@ -202,14 +202,14 @@ const AlgorithmDialog = ({ open, onClose }) => (
             <sub>d</sub>
             <sup>i</sup>{" "}
           </i>{" "}
-          we mean the value of particle's location on <i>d</i>-th dimension.
+          we mean the value of particle's location on <i>d</i>-th dimension [3].
         </p>
 
         <p>
           In other words, the simulation collisions with boundary are handled by having particle "bounce" of it.
           Particle will change its direction and lose half of its directional speed.
           Ex. if particle collided with y-boundary then its speed in y-axis direction will be reversed and halved.
-          In demo case the particle will bounce off without loss of speed. [3]
+          In demo case the particle will bounce off without loss of speed [3].
         </p>
         <img src="images/vectors.jpg" alt="Vectors" />
         <div className="image-caption">Vectors applied to a particle </div>
@@ -246,7 +246,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
               <sup>i</sup>{" "}
             </i>{" "}
             provides inertia, allowing it to overshoot local minima and explore
-            unknown regions of the problem domain. [4] {" "}
+            unknown regions of the problem domain [4].  {" "}
           </li>
         </ul>
         <img className="flowchart" src="images/flow.jpg" alt="Flowchart" />
