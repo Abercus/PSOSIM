@@ -270,7 +270,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
           </li>
         </ul>
         <img src="images/topologies.jpg" alt="Topologies" className="algorithm-topologies"/>
-        <div>Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies [6].</div>
+        <div className="image-caption">Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies [6].</div>
 
         <p>
           In the simulation collisions with boundary are handled by having particle "bounce" of it.
