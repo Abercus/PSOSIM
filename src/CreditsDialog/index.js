@@ -17,6 +17,10 @@ const CreditsDialog = ({ open, onClose }) => (
     <DialogTitle id="form-dialog-title">Credits</DialogTitle>
     <DialogContent>
       <DialogContentText>
+        <div className="credits-authors">
+            Made by
+            <p><strong>Joonas Puura</strong>, <strong>Maksyim Semikin</strong> and <strong>Reelika Tõnisson</strong></p> for course <b>MTAT.03.238 Advanced Algorithmics</b>.
+        </div>
         <div className="credits-imgs">
           <img src="images/ut_logo.png"></img>
           <img src="images/study_it.jpg"></img>
