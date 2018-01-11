@@ -20,10 +20,10 @@ const AlgorithmDialog = ({ open, onClose }) => (
           area. There is only one piece of food in the area being searched.
           Birds do not know where the food is, but they know how far the food is
           in each iteration. So, what's the best strategy to find the food? The
-          effective one is to follow the bird which is nearest to the food.{" "}
+          effective one is to follow the bird which is nearest to the food. [1]{" "}
         </p>
         <img src="images/map.jpg" alt="Map" />
-        <div className="image-caption">Visualization of particle swarm visualization [1]</div>
+        <div className="image-caption">Visualization of particle swarm visualization [2]</div>
         <p>
           PSO works in an iterative process. First generation of particles is
           initialised with random positions and velocities. Algorithm approaches
@@ -83,7 +83,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
                 &phi;<sub>p</sub>, &phi;<sub>g</sub>{" "}
               </i>{" "}
               - influence factor of personal/global best
-            </li>
+            </li> [1]
           </ul>
           <p>
             Selecting factors{" "}
@@ -104,7 +104,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
               &phi;<sub>g</sub>{" "}
             </i>{" "}
             and ranges from <i>[0, 4]</i>. However, other settings are also
-            used.{" "}
+            used. [1] {" "}
           </p>
           <p>
             If{" "}
@@ -119,7 +119,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
             </i>, particles will move more towards the global best-found
             location. Inertia weight <i> &omega; </i> determines the
             contribution rate of a particle's previous velocity to its current
-            velocity. [2]
+            velocity. [1]
           </p>
           <p>The formula for updating velocity is:</p>
           <p>
@@ -151,10 +151,10 @@ const AlgorithmDialog = ({ open, onClose }) => (
             <sup>i</sup>+<b>v</b>
             <sub>k+1</sub>
             <sup>i</sup>{" "}
-          </i>
+          </i> [1]
         </p>
         <p>
-          For each dimension <i>d</i> (in simulation's case two dimensions), the particle is bounded by interval{" "}
+          For each dimension [7]<i>d</i> (in simulation's case two dimensions), the particle is bounded by interval{" "}
           <i>
             [min<sub>d</sub> , max<sub>d</sub>]
           </i>. If this criterion is not met, the velocity is modified:
@@ -204,8 +204,15 @@ const AlgorithmDialog = ({ open, onClose }) => (
           </i>{" "}
           we mean the value of particle's location on <i>d</i>-th dimension.
         </p>
+
+        <p>
+          In other words, the simulation collisions with boundary are handled by having particle "bounce" of it.
+          Particle will change its direction and lose half of its directional speed.
+          Ex. if particle collided with y-boundary then its speed in y-axis direction will be reversed and halved.
+          In demo case the particle will bounce off without loss of speed. [3]
+        </p>
         <img src="images/vectors.jpg" alt="Vectors" />
-        <div className="image-caption">Vectors applied to a particle [3]</div>
+        <div className="image-caption">Vectors applied to a particle </div>
         <p>
           Three vectors applied to a particle in one iteration of a Particle
           Swarm Optimization are:{" "}
@@ -239,7 +246,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
               <sup>i</sup>{" "}
             </i>{" "}
             provides inertia, allowing it to overshoot local minima and explore
-            unknown regions of the problem domain.{" "}
+            unknown regions of the problem domain. [4] {" "}
           </li>
         </ul>
         <img className="flowchart" src="images/flow.jpg" alt="Flowchart" />
@@ -266,34 +273,27 @@ const AlgorithmDialog = ({ open, onClose }) => (
             In <b>ring topology</b> each particle informs 2 other particles and itself.
             The neighbourhood of the particle <i>i</i> is: <i>i-1 mod(S), i, i+1 mod(S)</i>, where{" "}
             <i>S</i> is the total number of particles.
-            The neighbourhood is set in the beginning and does not change during the simulation.
+            The neighbourhood is set in the beginning and does not change during the simulation. [3]
           </li>
         </ul>
         <img src="images/topologies.jpg" alt="Topologies" className="algorithm-topologies"/>
         <div className="image-caption">Graphical representations of above-described topologies in order from left-to-right: global, ring and random topologies [6].</div>
 
-        <p>
-          In the simulation collisions with boundary are handled by having particle "bounce" of it.
-          Particle will change its direction and lose half of its directional speed.
-          Ex. if particle collided with y-boundary then its speed in y-axis direction will be reversed and halved.
-          In demo case the particle will bounce off without loss of speed. [7]
-        </p>
 
         <p className="algorithm-references">
           {" "}
           <b>References:</b>
           <ol>
+			<li><a href="http://www.swarmintelligence.org/tutorials.php">Xiaouhui Hu "PSO Tutorial", 2006.</a></li>
             <li><a href="https://se.mathworks.com/matlabcentral/fileexchange/43541-particle-swarm-optimization--pso-">
               MathWorks "Particle Swarm Optimization"
             </a></li>
-            <li><a href="http://www.swarmintelligence.org/tutorials.php">Xiaouhui Hu "PSO Tutorial", 2006.</a></li>
+			<li><a href="http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf">Maurice Clerc "Standard Particle Swarm Optimisation", 2012.</a></li>
             <li><a href="http://www.jade-cheng.com/au/coalhmm/optimization/">Jade Cheng Yu "Numerical Optimization"</a></li>
-            <li><a href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Test functions for optimization</a></li>
             <li><a href="https://www.hindawi.com/journals/acisc/2012/897127/">Sushree Sangita Patnaik, Anup Kumar Panda "Particle Swarm Optimization and Bacterial Foraging Optimization Techniques for Optimal Current Harmonic Mitigation by Employing Active Power Filter", 2012</a></li>
             <li><a href="https://dev.heuristiclab.com/trac.fcgi/wiki/Documentation/Reference/Particle%20Swarm%20Optimization">
               HeuristicLab "Particle Swarm Optimization"
             </a></li>
-            <li><a href="http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf">Maurice Clerc "Standard Particle Swarm Optimisation", 2012.</a></li>
           </ol>
         </p>
       </DialogContentText>
