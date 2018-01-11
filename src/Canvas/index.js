@@ -158,7 +158,7 @@ export default class Canvas extends Component {
 
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction.toString()) {
 
-            this.controls.position = this.controls.position0;
+            this.controls.target = new THREE.Vector3(0,0,0);
             this.createGraph();
 
             this.scene.remove(this.sphere);
