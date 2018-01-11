@@ -1,6 +1,8 @@
 # PSOSIM
 Particle Swarm Optimization algorithm's simulation, done as a project for course MTAT.03.238 Advanced Algorithmics (fall 2017).
 
+## Poster
+Project poster is in file PSO_poster_final.pdf
 
 ## Live Demo
 
@@ -10,3 +12,4 @@ Some required WebGL features are not supported by IE11, tested with later versio
 
 
 ![Picture of simulation](DEMO_PSO/demo_picture.png)
+
