@@ -158,6 +158,7 @@ export default class Canvas extends Component {
 
         if (!this.previousOptFunct || this.previousOptFunct !== this.props.optimizationFunction.toString()) {
 
+            this.controls.position = this.controls.position0;
             this.createGraph();
 
             this.scene.remove(this.sphere);
@@ -270,6 +271,7 @@ export default class Canvas extends Component {
 
     setupVisualization() {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        // Save orbit controls position
 
         const light = new THREE.PointLight(0xffffff);
         light.position.set(0,250,0);
