@@ -27,7 +27,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
         <p>
           PSO works in an iterative process. First generation of particles is
           initialised with random positions and velocities. Algorithm approaches
-          optima by updating generations. Variables used in the simulation are:
+          optima by updating generations. Variables used in the simulation are [1] :
           <ul>
             <li>
               <i> k </i> - iteration number
@@ -83,7 +83,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
                 &phi;<sub>p</sub>, &phi;<sub>g</sub>{" "}
               </i>{" "}
               - influence factor of personal/global best
-            </li> [1]
+            </li>
           </ul>
           <p>
             Selecting factors{" "}
@@ -104,7 +104,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
               &phi;<sub>g</sub>{" "}
             </i>{" "}
             and ranges from <i>[0, 4]</i>. However, other settings are also
-            used. [1] {" "}
+            used [1].  {" "}
           </p>
           <p>
             If{" "}
@@ -119,9 +119,9 @@ const AlgorithmDialog = ({ open, onClose }) => (
             </i>, particles will move more towards the global best-found
             location. Inertia weight <i> &omega; </i> determines the
             contribution rate of a particle's previous velocity to its current
-            velocity. [1]
+            velocity [1].
           </p>
-          <p>The formula for updating velocity is:</p>
+          <p>The formula [1] for updating velocity is:</p>
           <p>
             {" "}
             <i>
@@ -151,7 +151,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
             <sup>i</sup>+<b>v</b>
             <sub>k+1</sub>
             <sup>i</sup>{" "}
-          </i> [1]
+          </i>
         </p>
         <p>
           For each dimension <i>d</i> (in simulation's case two dimensions), the particle is bounded by interval{" "}
@@ -273,7 +273,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
             In <b>ring topology</b> each particle informs 2 other particles and itself.
             The neighbourhood of the particle <i>i</i> is: <i>i-1 mod(S), i, i+1 mod(S)</i>, where{" "}
             <i>S</i> is the total number of particles.
-            The neighbourhood is set in the beginning and does not change during the simulation. [3]
+            The neighbourhood is set in the beginning and does not change during the simulation [3].
           </li>
         </ul>
         <img src="images/topologies.jpg" alt="Topologies" className="algorithm-topologies"/>

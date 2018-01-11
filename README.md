@@ -4,7 +4,7 @@ Particle Swarm Optimization algorithm's simulation, done as a project for course
 
 ## Live Demo
 
-Live demo of the project: [Live Demo](https://abercus.github.io/PSOSIM/). 
+Live demo of the project: [Live Demo](https://abercus.github.io/PSOSIM/).
 
 Some required WebGL features are not supported by IE11, tested with later versions of Firefox, Chrome and Edge.
 
