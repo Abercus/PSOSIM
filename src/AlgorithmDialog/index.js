@@ -280,7 +280,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
         <p className="algorithm-references">
           {" "}
           <b>References:</b>
-          <ul>
+          <ol>
             <li><a href="http://www.swarmintelligence.org/tutorials.php">Xiaouhui Hu "PSO Tutorial", 2006.</a></li>
             <li><a href="http://clerc.maurice.free.fr/pso/SPSO_descriptions.pdf">Maurice Clerc "Standard Particle Swarm Optimisation", 2012.</a></li>
             <li><a href="https://en.wikipedia.org/wiki/Test_functions_for_optimization">Test functions for optimization</a></li>
@@ -292,7 +292,7 @@ const AlgorithmDialog = ({ open, onClose }) => (
             </a></li>
             <li><a href="http://www.jade-cheng.com/au/coalhmm/optimization/">Jade Cheng Yu "Numerical Optimization"</a></li>
             <li><a href="https://www.hindawi.com/journals/acisc/2012/897127/">Sushree Sangita Patnaik, Anup Kumar Panda "Particle Swarm Optimization and Bacterial Foraging Optimization Techniques for Optimal Current Harmonic Mitigation by Employing Active Power Filter", 2012</a></li>
-          </ul>
+          </ol>
         </p>
       </DialogContentText>
     </DialogContent>
