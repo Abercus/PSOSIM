@@ -110,7 +110,7 @@ class App extends Component {
       <div className="App">
         <AppBar className="App-header">
           <Toolbar>
-            <img className="logo" src="images/logo.svg" />
+            <img className="logo" src="images/logo.svg" alt="logo" />
             <Typography type="title" color="inherit" className="App-title">
               Particle swarm optimization
             </Typography>

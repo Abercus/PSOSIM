@@ -4,23 +4,18 @@ import {
   euclidDistance,
   addition,
   addition_w,
-  addition_2,
-  addition_2_w,
   subtract,
-  subtract_2,
-  subtract_2_w,
   mod,
 } from '../pso/math';
 
 // Class for whole population
 export default class Population {
-  constructor(pop, optimizeByFunction, topology, speed, xMin, xMax, yMin, yMax) {
+  constructor(pop, demo, topology, xMin, xMax, yMin, yMax) {
     this.population = pop;
     this.gBest = null;
     this.gBestNumerical = null;
-    this.speed = speed;
-    this.demo = !optimizeByFunction;
-    this.reflection = this.demo ? 1:0.5;
+    this.demo = demo;
+    this.reflection = this.demo ? 1 : 0.5; // If demo then reflection factor is 1
     this.xMin = xMin;
     this.xMax = xMax;
     this.yMin = yMin;
@@ -37,71 +32,54 @@ export default class Population {
     }
   }
 
-  set_optimization_goal(vector) {
-    this.optimization_goal = vector;
-    var func = function (x,y) {
-      return euclidDistance({x:x, y:y}, vector);
-    }
-    // Reset best numerical
 
+  set_optimization_goal(vector) {
+    // Used for demo function. We set vector/location to be the location we optimize for
+    // Build the function based on the vector
+    var func = function(x, y) {
+      return euclidDistance({
+        x: x,
+        y: y
+      }, vector);
+    }
+    // Make population optimize according to the function
     this.set_optimization_function(func);
 
   }
 
   set_optimization_function(func) {
+    // Set a function to optimize for
     this.optimization_function = func;
-    this.gBest = null;
-    this.gBestNumerical = null;
-    for (var i=0; i<this.population.length; i++) {
-        this.population[i].bestNumerical = this.optimization_function(this.population[i].x, this.population[i].y);
-        this.population[i].pBest = new THREE.Vector3(this.population[i].x, this.population[i].y, this.population[i].bestNumerical);
-
-    }
     this.findPopulationBest();
   }
 
 
   updateParticle(particle, speed) {
-    // CHECK VELOCITIES.. MAX LIMITS -LIMIT and LIMIT. Can be made int o a slider.
     var LIMIT = speed;
-    //LIMIT = 1;
-    // Limit should depend on the task...
-    if (particle.velocity.x < -LIMIT) {
-      particle.velocity.x = -LIMIT;
-    }
-    if (particle.velocity.x > LIMIT) {
-      particle.velocity.x = LIMIT;
-    }
-    if (particle.velocity.y < -LIMIT) {
-      particle.velocity.y = -LIMIT;
-    }
-    if (particle.velocity.y > LIMIT) {
-      particle.velocity.y = LIMIT;
-    }
 
-    // If bounded search area.
-    var newLocation = addition(particle, particle.velocity);
+    // Limit of the particle speed. If higher then clip it to maximum.
+    // Minimum of upper limit and particle's velocity.
+    particle.velocity.x = Math.min(LIMIT, particle.velocity.x);
+    particle.velocity.y = Math.min(LIMIT, particle.velocity.y);
+    // Maximum of lower limit and particle's velocity.
+    particle.velocity.x = Math.max(-LIMIT, particle.velocity.x);
+    particle.velocity.y = Math.max(-LIMIT, particle.velocity.y);
+
+    let newLocation = addition(particle, particle.velocity);
+    // Check if particle would go out of boundaries
     if (newLocation.x > this.xMax) {
-      if (particle.velocity.x > 0) {
-        particle.velocity.x *= -this.reflection;
-      }
+      particle.velocity.x *= -this.reflection;
       newLocation.x = this.xMax;
     } else if (newLocation.x < this.xMin) {
-        if (particle.velocity.x < 0) {
-          particle.velocity.x *= -this.reflection;
-        }
+      particle.velocity.x *= -this.reflection;
       newLocation.x = this.xMin;
     }
     if (newLocation.y > this.yMax) {
-      if (particle.velocity.y > 0) {
-        particle.velocity.y *= -this.reflection;
-      }
-        newLocation.y = this.yMax;
+      particle.velocity.y *= -this.reflection;
+      newLocation.y = this.yMax;
     } else if (newLocation.y < this.yMin) {
-      if (particle.velocity.y < 0) {
-        particle.velocity.y *= -this.reflection;
-      }
-        newLocation.y = this.yMin;
+      particle.velocity.y *= -this.reflection;
+      newLocation.y = this.yMin;
     }
 
     particle.x = newLocation.x;
@@ -126,121 +104,149 @@ export default class Population {
     }
   }
 
+
   updateGlobal(omega, phiP, phiG, speed) {
+    // Neighbourhood is global.
     for (let particle of this.population) {
-      var rand1 = Math.random();
-      var rand2 = Math.random();
-      particle.velocity = addition_2_w(
+      let rand1 = Math.random();
+      let rand2 = Math.random();
+      particle.velocity = addition_w(
         omega,
         particle.velocity,
-        addition_2(
-          subtract_2(particle.pBest, particle, phiP, rand1),
-          subtract_2(this.gBest, particle, phiG, rand2)
+        addition(
+          subtract(particle.pBest, particle, phiP, rand1),
+          subtract(this.gBest, particle, phiG, rand2)
         ));
 
     }
-    for (let particle of this.population) {
-        this.updateParticle(particle, speed);
-    }
-    this.epoch++;
   }
 
   updateRing(omega, phiP, phiG, speed) {
-    for (var i=0; i<this.population.length; i++) {
-      var rand1 = Math.random();
-      var rand2 = Math.random();
-      var particle = this.population[i];
-      var left_neighbour = this.population[mod(i-1, this.population.length)];
-      var right_neighbour = this.population[mod(i+1, this.population.length)];
-      // Who has the best personalBest
-      var pB = particle.pBest;
-      var pbNum = particle.bestNumerical;
+    // Ring topology.
+    for (let i = 0; i < this.population.length; i++) {
+      let rand1 = Math.random();
+      let rand2 = Math.random();
+      let particle = this.population[i];
+      let left_neighbour = this.population[mod(i - 1, this.population.length)];
+      let right_neighbour = this.population[mod(i + 1, this.population.length)];
 
-      if (left_neighbour.bestNumerical < pbNum) {
-        pbNum = left_neighbour.bestNumerical;
-        pB = left_neighbour.pBest;
-      }
-      if (right_neighbour.bestNumerical < pbNum) {
-        pbNum = right_neighbour.bestNumerical;
-        pB = right_neighbour.pBest;
-      }
+      // Find best of the neighbourhood
+      let neighbourhoodBest = particle.pBest;
+      let neighbourhoodBestNum = particle.bestNumerical;
 
-      particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pB, particle, phiG, rand2)));
+      // Check if left has found better best value  (ind -1)
+      if (left_neighbour.bestNumerical < neighbourhoodBestNum) {
+        neighbourhoodBest = left_neighbour.pBest;
+        neighbourhoodBestNum = left_neighbour.bestNumerical;
+      }
+      // Check right neighbour
+      if (right_neighbour.bestNumerical < neighbourhoodBestNum) {
+        neighbourhoodBest = left_neighbour.pBest;
+        neighbourhoodBestNum = left_neighbour.bestNumerical;
+      }
+      // New velocity is based on neighbouhood best and particles own best
+      particle.velocity = addition_w(omega, particle.velocity,
+        addition(
+          subtract(particle.pBest, particle, phiP, rand1),
+          subtract(neighbourhoodBest, particle, phiG, rand2)
+        )
+      );
 
     }
+  }
 
+
+  runIteration(omega, phiP, phiG, speed) {
+    // Update velocities according to the function
+    this.updateFn(omega, phiP, phiG, speed);
+    // Update locations of the particles
     for (let particle of this.population) {
-        this.updateParticle(particle, speed);
+      this.updateParticle(particle, speed);
     }
+    // Increase epoch count
     this.epoch++;
   }
 
-    updateRandomAdaptive(omega, phiP, phiG, speed) {
-
-        // Network does not exist yet.
-        var k = 3;
-        if (this.previousGBestNumerical && this.previousGBestNumerical <= this.gBestNumerical) {
-            this.adaptionNetwork = undefined;
-        }
-        this.previousGBestNumerical=this.gBestNumerical;
-        // Array of arrays.
-        if (!this.adaptionNetwork) {
-          // k = 3
-          this.adaptionNetwork = new Array(this.population.length);
-          for (var i=0; i<this.population.length; i++) {
-            this.adaptionNetwork[i] = [i]; // Everyone informs themselves
-          }
-
-          // Everyone informs k randoms
-          for (i=0; i<this.population.length; i++) {
-            for (var j=0; j<k; j++) {
-              this.adaptionNetwork[Math.floor(Math.random()*this.population.length)].push(i);
-            }
-          }
-        }
-
-        // update particles
-        for (i=0; i<this.population.length; i++) {
-          var particle = this.population[i];
-          var rand1 = Math.random();
-          var rand2 = Math.random();
-
-          // Check through particles in its Network
-          var pb = particle.pBest;
-          var pbNum = particle.bestNumerical;
-          for (var ind in this.adaptionNetwork[i]) {
-            if (this.population[ind].bestNumerical < pbNum) {
-              pbNum = this.population[ind].bestNumerical;
-              pb = this.population[ind].pBest;
-            }
-          }
-
-          particle.velocity = addition_2_w(omega, particle.velocity, addition_2(subtract_2(particle.pBest, particle, phiP, rand1),subtract_2(pb, particle, phiG, rand2)));
-
-
-        }
-
-        for (let particle of this.population) {
-            this.updateParticle(particle, speed);
-        }
-        this.epoch++;
+  updateRandomAdaptive(omega, phiP, phiG, speed) {
+    // Random Adaptive
+    const k = 3; // How many neighbours are informed?
+    // If global best did not improve, force rebuild of the network
+    if (this.previousGBestNumerical && this.previousGBestNumerical <= this.gBestNumerical) {
+      this.informationNetwork = undefined;
     }
+    // Set previous best from current best.
+    this.previousGBestNumerical = this.gBestNumerical;
+
+    // Build the information network
+    if (!this.informationNetwork) {
+      // k = 3
+      this.informationNetwork = new Array(this.population.length);
+      for (let i = 0; i < this.population.length; i++) {
+        this.informationNetwork[i] = [i]; // Particle informs themselves
+      }
+      // Particle informs k other random particles
+      for (let i = 0; i < this.population.length; i++) {
+        for (let j = 0; j < k; j++) {
+          this.informationNetwork[Math.floor(Math.random() * this.population.length)].push(i);
+        }
+      }
+    }
+    // Update particles
+    for (let i = 0; i < this.population.length; i++) {
+      let particle = this.population[i];
+      let rand1 = Math.random();
+      let rand2 = Math.random();
+
+      // Check through particles in its network
+      let neighbourhoodBest = particle.pBest;
+      let neighbourhoodBestNum = particle.bestNumerical;
+      for (let ind of this.informationNetwork[i]) {
+        if (this.population[ind].bestNumerical < neighbourhoodBestNum) {
+          neighbourhoodBestNum = this.population[ind].bestNumerical;
+          neighbourhoodBest = this.population[ind].pBest;
+        }
+      }
+      // Change velocity of the particle
+      particle.velocity = addition_w(omega, particle.velocity,
+        addition(
+          subtract(particle.pBest, particle, phiP, rand1),
+          subtract(neighbourhoodBest, particle, phiG, rand2)));
+    }
+  }
 
   findPopulationBest() {
-    var bestNumerical = this.population[0].bestNumerical;
-    var best = this.population[0].pBest;
-    for (var i=1; i<this.population.length; i++) {
-      // Currently minimizing... Use a fitness function instead.
-      // Might add a checker to maximize, dependent on task.
+    // First reset best and numerical best variables.
+    // This initializes the population.
+    this.gBest = null;
+    this.gBestNumerical = null;
+    for (let i = 0; i < this.population.length; i++) {
+      // For each particle find its value according to the
+      this.population[i].bestNumerical = this.optimization_function(
+        this.population[i].x,
+        this.population[i].y);
+
+      this.population[i].pBest = new THREE.Vector3(
+        this.population[i].x,
+        this.population[i].y,
+        this.population[i].bestNumerical);
+
+    }
+
+    let bestNumerical = this.population[0].bestNumerical;
+    let best = this.population[0].pBest;
+    for (let i = 1; i < this.population.length; i++) {
+      // Currently minimizing... Use another fitness function instead,
       if (this.population[i].bestNumerical < bestNumerical) {
         bestNumerical = this.population[i].bestNumerical;
         best = this.population[i].pBest;
       }
     }
+    // Set best numerical of the population.
     if (this.gBestNumerical) {
+      // If better than current best founds
       if (bestNumerical < this.gBestNumerical) {
-          this.gBestNumerical = bestNumerical;
-          this.gBest = best;
+        this.gBestNumerical = bestNumerical;
+        this.gBest = best;
       }
     } else {
       this.gBestNumerical = bestNumerical;
